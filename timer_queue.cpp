@@ -2,8 +2,6 @@
 
 #include "timer_queue.h"
 
-namespace maou
-{
 TimerId TimerQueue::m_next_timer_id(1);
 
 TimerId TimerQueue::NextTimerId()
@@ -70,5 +68,3 @@ int TimerQueue::Expire(int64_t now_ms, int64_t &next_expiration)
 
     return result;
 }
-
-}  // namespace maou

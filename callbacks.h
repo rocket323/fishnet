@@ -3,9 +3,6 @@
 
 #include <functional>
 
-namespace maou
-{
 typedef std::function<void(int)> EventsCallback;
-}
 
 #endif

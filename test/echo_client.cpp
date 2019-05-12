@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "event_loop.h"
 
-using namespace maou;
-
 void hello()
 {
     printf("hello world\n");

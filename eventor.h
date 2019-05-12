@@ -7,8 +7,6 @@
 #include "callbacks.h"
 #include "poller.h"
 
-namespace maou
-{
 class EventLoop;
 
 class Eventor
@@ -46,6 +44,5 @@ private:
 
     EventsCallback m_events_callback;
 };
-};  // namespace maou
 
 #endif

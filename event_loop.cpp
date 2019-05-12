@@ -9,8 +9,6 @@
 
 using namespace std::placeholders;
 
-namespace maou
-{
 static int CreateEventFd()
 {
     int event_fd = ::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
@@ -196,5 +194,3 @@ void EventLoop::WakeUp()
     ssize_t ret = ::write(m_wakeup_fd, &one, sizeof(one));
     (void)ret;
 }
-
-}  // namespace maou

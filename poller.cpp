@@ -6,8 +6,6 @@
 #include "eventor.h"
 #include "poller.h"
 
-namespace maou
-{
 Poller::Poller(EventLoop *event_loop) : m_event_loop(event_loop), m_epoll_fd(::epoll_create(EPOLL_EVENT_SIZE))
 {
     assert(m_epoll_fd >= 0);
@@ -83,4 +81,3 @@ void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
         }
     }
 }
-};  // namespace maou

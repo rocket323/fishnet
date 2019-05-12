@@ -6,8 +6,6 @@
 #include <map>
 #include <set>
 
-namespace maou
-{
 typedef uint64_t TimerId;
 typedef std::function<void()> TimerTask;
 
@@ -48,5 +46,4 @@ private:
     std::map<TimerId, int64_t> m_timer_expiration;
 };
 
-}  // namespace maou
 #endif

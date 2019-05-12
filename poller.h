@@ -5,8 +5,6 @@
 #include <map>
 #include <vector>
 
-namespace maou
-{
 class EventLoop;
 class Eventor;
 
@@ -41,7 +39,5 @@ private:
     struct epoll_event m_epoll_events[EPOLL_EVENT_SIZE];
     std::map<int, Eventor *> m_eventors;
 };
-
-};  // namespace maou
 
 #endif

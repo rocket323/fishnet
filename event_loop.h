@@ -8,8 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace maou
-{
 #define NET_OK 0
 #define NET_ERR -1
 
@@ -118,7 +116,5 @@ private:
     // running flag
     bool m_running;
 };
-
-}  // namespace maou
 
 #endif
