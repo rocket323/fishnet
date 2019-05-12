@@ -13,10 +13,16 @@ set(GTEST_ALL_LIB ${GTEST_LIB_DIR}/libgtest.a ${GTEST_LIB_DIR}/libgtest_main.a)
 set(ALL_LIB ${GTEST_ALL_LIB} pthread)
 
 file(GLOB SOURCE *.cpp tcp/*.cpp)
-set(SOURCE tcp/buffer.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR})
-# add_executable(${PROJECT_NAME} ${SOURCE} main.cpp)
+# add_library(${PROJECT_NAME} ${SOURCE})
+
+file(GLOB UNIT_SOURCE test/*.cpp)
+include_directories(${GTEST_INCLUDE})
+add_executable(${PROJECT_NAME}_test ${SOURCE} ${UNIT_SOURCE})
+target_link_libraries(${PROJECT_NAME}_test ${ALL_LIB})
+
+add_executable(echo_client test/echo_client.cpp ${SOURCE})
 
 add_subdirectory(deps)
 add_subdirectory(test)

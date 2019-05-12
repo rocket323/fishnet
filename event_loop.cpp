@@ -1,13 +1,11 @@
+#include "event_loop.h"
 #include <assert.h>
 #include <sys/eventfd.h>
+#include <sys/time.h>
 #include <unistd.h>
-
-#include "event_loop.h"
 #include "eventor.h"
-#include "log/log.h"
 #include "poller.h"
 #include "timer_queue.h"
-#include "util/time_util.h"
 
 using namespace std::placeholders;
 
@@ -20,6 +18,19 @@ static int CreateEventFd()
         abort();
 
     return event_fd;
+}
+
+int64_t CurrentSystemTimeMillis()
+{
+    struct timeval tv;
+    ::gettimeofday(&tv, NULL);
+    return static_cast<int64_t>(tv.tv_sec) * 1000 + tv.tv_usec / 1000;
+}
+
+time_t CurrentSystemTime()
+{
+    time_t now = ::time(NULL);
+    return now;
 }
 
 EventLoop::EventLoop()
@@ -76,31 +87,31 @@ void EventLoop::RemoveEvents(Eventor *eventor)
 
 TimerId EventLoop::RunAt(int64_t expiration, const Task &task)
 {
-    DCHECK(IsCurrent());
+    // DCHECK(IsCurrent());
     return m_timer_queue->AddTimer(task, expiration, 0);
 }
 
 TimerId EventLoop::RunAfter(int64_t delay, const Task &task)
 {
-    DCHECK(IsCurrent());
-    return m_timer_queue->AddTimer(task, TimeUtil::CurrentSystemTimeMillis() + delay, 0);
+    // DCHECK(IsCurrent());
+    return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + delay, 0);
 }
 
 TimerId EventLoop::RunPeriodic(int64_t interval, const Task &task)
 {
-    DCHECK(IsCurrent());
-    return m_timer_queue->AddTimer(task, TimeUtil::CurrentSystemTimeMillis() + interval, interval);
+    // DCHECK(IsCurrent());
+    return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + interval, interval);
 }
 
 TimerId EventLoop::RunPeriodic(int64_t delay, int64_t interval, const Task &task)
 {
-    DCHECK(IsCurrent());
-    return m_timer_queue->AddTimer(task, TimeUtil::CurrentSystemTimeMillis() + delay, interval);
+    // DCHECK(IsCurrent());
+    return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + delay, interval);
 }
 
 void EventLoop::CancelTimer(TimerId id)
 {
-    DCHECK(IsCurrent());
+    // DCHECK(IsCurrent());
     return m_timer_queue->RemoveTimer(id);
 }
 
@@ -123,7 +134,7 @@ void EventLoop::Loop()
 int EventLoop::LoopOnce(int poll_timeout_ms)
 {
     // must run in loop-thread
-    DCHECK(IsCurrent());
+    // DCHECK(IsCurrent());
 
     int num = 0;
 
@@ -140,7 +151,7 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
 
     // timer queue
     int64_t next_expiration = -1;
-    int64_t now_ms = TimeUtil::CurrentSystemTimeMillis();
+    int64_t now_ms = CurrentSystemTimeMillis();
     num += m_timer_queue->Expire(now_ms, next_expiration);
 
     // poller

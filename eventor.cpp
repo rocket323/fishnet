@@ -1,12 +1,15 @@
 #include "eventor.h"
 #include "event_loop.h"
-#include "log/log.h"
 
 namespace maou
 {
-Eventor::Eventor(EventLoop *event_loop, int fd) : m_event_loop(event_loop), m_fd(fd), m_events(0), m_revents(0) {}
+Eventor::Eventor(EventLoop *event_loop, int fd) : m_event_loop(event_loop), m_fd(fd), m_events(0), m_revents(0)
+{
+}
 
-Eventor::~Eventor() {}
+Eventor::~Eventor()
+{
+}
 
 void Eventor::EnableReading()
 {
