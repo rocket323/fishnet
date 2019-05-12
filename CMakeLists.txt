@@ -1,9 +1,28 @@
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 2.8) 
+project(fishnet CXX)
 
-project(fishnet)
+set(CMAKE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DEPS_DIR ${CMAKE_ROOT_DIR}/deps)
+
+# googletest
+set(GTEST_DIR ${DEPS_DIR}/googletest/googletest)
+set(GTEST_INCLUDE ${GTEST_DIR}/include)
+set(GTEST_LIB_DIR ${CMAKE_ROOT_DIR}/build/lib/)
+set(GTEST_ALL_LIB ${GTEST_LIB_DIR}/libgtest.a ${GTEST_LIB_DIR}/libgtest_main.a)
+
+set(ALL_LIB ${GTEST_ALL_LIB} pthread)
 
 # file(GLOB_RECURSE SOURCE main.cpp)
-set(SOURCE main.cpp)
+set(SOURCE tcp/buffer.cpp)
 
 include_directories(${PROJECT_SOURCE_DIR})
-add_executable(${PROJECT_NAME} ${SOURCE})
+# add_executable(${PROJECT_NAME} ${SOURCE} main.cpp)
+
+# unittest
+set(UNIT_SOURCE test/buffer_test.cpp)
+include_directories(${GTEST_INCLUDE})
+add_executable(${PROJECT_NAME}_test ${SOURCE} ${UNIT_SOURCE})
+target_link_libraries(${PROJECT_NAME}_test ${ALL_LIB})
+
+add_subdirectory(deps)
+
