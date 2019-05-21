@@ -25,6 +25,7 @@ public:
 
     void SetConnectionCallback(const ConnectionCallback &cb) { connection_callback_ = cb; }
     void SetCloseCallback(const CloseCallback &cb) { close_callback_ = cb; }
+    void SetReadCallback(const ReadCallback &cb) { read_callback_ = cb; }
 
     uint64_t Id() const { return conn_id_; }
     const InetAddr &LocalAddr() const { return local_addr_; }
@@ -47,12 +48,12 @@ public:
 
     void Close();
     void CloseAfter(int64_t delay_ms);
-    void Closed() const { return state_ == ConnState_Disconnected; }
+    bool Closed() const { return state_ == ConnState_Disconnected; }
 
     void EnableReading();
     void DisableReading();
     void EnableWriting();
-    void EnableReading();
+    void DisableWriting();
 
     time_t LastActiveTime() const { last_active_time_; }
     const std::string &ErrMsg() const { return err_msg_; }

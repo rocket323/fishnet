@@ -20,6 +20,10 @@ public:
     std::string RetrieveAllToString();
     void RetrieveAll();
 
+    const char *Find(const char *begin, const char *end);
+    const char *Find(const std::string &delimiter);
+    const char *FindFrom(const char *from, const char *begin, const char *end);
+
     size_t ReadableBytes() const { return write_index_ - read_index_; }
     size_t WritableBytes() const { return Cap() - write_index_; }
     size_t Cap() const { return buffer_.size(); }

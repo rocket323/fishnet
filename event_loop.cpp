@@ -140,10 +140,10 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
     std::vector<Task> tasks;
     {
         std::lock_guard<std::mutex> lock(m_tasks_mutex);
-        m_tasks.swap(tasks);
+        tasks.swap(m_tasks);
     }
 
-    for (auto it = m_tasks.begin(); it != m_tasks.end(); it++)
+    for (auto it = tasks.begin(); it != tasks.end(); it++)
         (*it)();
     num += tasks.size();
 

@@ -1,5 +1,6 @@
 #include "inet_addr.h"
 #include <assert.h>
+#include <string.h>
 
 InetAddr::InetAddr()
 {

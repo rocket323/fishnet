@@ -9,7 +9,7 @@
 using namespace std::placeholders;
 
 Acceptor::Acceptor(EventLoop *event_loop, const InetAddr &listen_addr, const AcceptCallback &accept_callback)
-    : event_loop_(event_loop), sock_(), eventor(), listen_addr_(listen_addr), accept_callback_(accept_callback)
+    : event_loop_(event_loop), sock_(), eventor_(), listen_addr_(listen_addr), accept_callback_(accept_callback)
 {
 }
 
@@ -27,8 +27,8 @@ bool Acceptor::Listen()
     }
 
     sock_.reset(new Socket(sockfd));
-    sock_.SetReuseAddr(true);
-    if (!sock_.BindAndListen(listen_addr_, 1024))
+    sock_->SetReuseAddr(true);
+    if (!sock_->BindAndListen(listen_addr_, 1024))
     {
         // error
         sock_.reset();
@@ -46,7 +46,7 @@ void Acceptor::Stop()
     if (sock_)
     {
         assert(eventor_);
-        eventor_->Remove();
+        eventor_->RemoveSelf();
         eventor_.reset();
         sock_.reset();
     }
@@ -60,7 +60,7 @@ void Acceptor::HandleEvents(int revents)
 
 void Acceptor::HandleRead()
 {
-    int fd = sock_.Accept();
+    int fd = sock_->Accept();
     if (fd >= 0)
     {
         assert(accept_callback_);

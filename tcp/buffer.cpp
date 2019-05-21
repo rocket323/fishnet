@@ -25,6 +25,27 @@ const char *Buffer::Peek()
     return BeginRead();
 }
 
+const char *Buffer::Find(const char *begin, const char *end)
+{
+    return FindFrom(BeginRead(), begin, end);
+}
+
+const char *Buffer::Find(const std::string &delimiter)
+{
+    assert(!delimiter.empty());
+    return Find(delimiter.data(), delimiter.data() + delimiter.length());
+}
+
+const char *Buffer::FindFrom(const char *from, const char *begin, const char *end)
+{
+    assert(from >= BeginRead());
+    assert(from <= BeginWrite());
+    const char *found = std::search(from, (const char *)BeginWrite(), begin, end);
+    if (found == BeginWrite())
+        return NULL;
+    return found;
+}
+
 void Buffer::Retrieve(size_t n)
 {
     assert(ReadableBytes() >= n);

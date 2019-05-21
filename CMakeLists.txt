@@ -14,15 +14,18 @@ set(ALL_LIB ${GTEST_ALL_LIB} pthread)
 
 file(GLOB SOURCE *.cpp tcp/*.cpp)
 
-include_directories(${PROJECT_SOURCE_DIR})
-# add_library(${PROJECT_NAME} ${SOURCE})
+SET(NET_COMMON_INCLUDE
+    ${CMAKE_ROOT_DIR}
+    )
 
-file(GLOB UNIT_SOURCE test/*.cpp)
-include_directories(${GTEST_INCLUDE})
-add_executable(${PROJECT_NAME}_test ${SOURCE} ${UNIT_SOURCE})
-target_link_libraries(${PROJECT_NAME}_test ${ALL_LIB})
+SET(NET_COMMON_LIB
+    ${CMAKE_ROOT_DIR}/libfishnet.a
+    )
 
-add_executable(echo_client test/echo_client.cpp ${SOURCE})
+include_directories(${CMAKE_ROOT_DIR})
+add_library(${PROJECT_NAME} ${SOURCE})
+set(LIBRARY_OUTPUT_PATH ${CMAKE_ROOT_DIR})
 
 add_subdirectory(deps)
 add_subdirectory(test)
+add_subdirectory(examples)

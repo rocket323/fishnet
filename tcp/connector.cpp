@@ -7,7 +7,7 @@
 
 int Connector::Connect(const InetAddr &server_addr, int &sockfd)
 {
-    sockfd = sockes::CreateNonBlockingStreamSocket();
+    sockfd = sockets::CreateNonBlockingStreamSocket();
     if (sockfd < 0)
         return NET_ERR;
 

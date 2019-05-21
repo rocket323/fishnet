@@ -1,10 +1,12 @@
 #include "socket.h"
+#include <assert.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "inet_addr.h"
 
 Socket::Socket(int sockfd) : sock_fd_(sockfd)
 {
@@ -26,7 +28,7 @@ bool Socket::BindAndListen(const InetAddr &addr, int backlog)
     return true;
 }
 
-int Socket::Accpet()
+int Socket::Accept()
 {
     struct sockaddr_in addr;
     socklen_t sockaddr_len = sizeof(addr);
@@ -39,7 +41,7 @@ namespace sockets
 int CreateStreamSocket()
 {
     int sockfd = ::socket(AF_INET, SOCK_STREAM, 0);
-    return sockdf;
+    return sockfd;
 }
 
 int Bind(int sockfd, const InetAddr &bind_addr)
@@ -56,11 +58,11 @@ int CreateNonBlockingStreamSocket()
     if (sockfd < 0)
         return sockfd;
 
-    SetNonBocking(sockfd, true);
+    SetNonBlocking(sockfd, true);
     return sockfd;
 }
 
-bool SetNonBocking(int sockfd, bool on)
+bool SetNonBlocking(int sockfd, bool on)
 {
     int ret = ::fcntl(sockfd, F_GETFL, 0);
     if (ret < 0)
@@ -118,16 +120,14 @@ bool SetKeepAlive(int sockfd, bool on)
 
 bool SetRecvBuffSize(int sockfd, int size)
 {
-    int val = on ? 1 : 0;
-    if (::setsockopt(sockfd, SOL_SOCKET, SO_RECVBUF, &val, sizeof(val)))
+    if (::setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &size, sizeof(size)))
         return false;
     return true;
 }
 
 bool SetSendBuffSize(int sockfd, int size)
 {
-    int val = on ? 1 : 0;
-    if (::setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &val, sizeof(val)))
+    if (::setsockopt(sockfd, SOL_SOCKET, SO_SNDBUF, &size, sizeof(size)))
         return false;
     return true;
 }
@@ -142,7 +142,7 @@ int GetSocketError(int sockfd, int &saved_error)
     return ret;
 }
 
-InetAddr &GetLocalAddr(int sockfd)
+InetAddr GetLocalAddr(int sockfd)
 {
     struct sockaddr_in addr;
     socklen_t addr_len = sizeof(addr);
@@ -150,7 +150,7 @@ InetAddr &GetLocalAddr(int sockfd)
     return InetAddr(addr);
 }
 
-InetAddr &GetPeerAddr(int sockfd)
+InetAddr GetPeerAddr(int sockfd)
 {
     struct sockaddr_in addr;
     socklen_t addr_len = sizeof(addr);
