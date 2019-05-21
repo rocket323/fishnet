@@ -2,6 +2,11 @@
 #define _NET_CONNECTOR_H_
 
 #include <memory>
+#include "callbacks.h"
+#include "connector.h"
+#include "event_loop.h"
+#include "inet_addr.h"
+#include "tcp_connection.h"
 
 class InetAddr;
 class EventLoop;

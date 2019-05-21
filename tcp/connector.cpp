@@ -38,5 +38,6 @@ std::shared_ptr<TcpConnection> Connector::Connect(EventLoop *event_loop, const I
                                                 sockets::GetPeerAddr(sockfd));
 
     conn->state_ = TcpConnection::ConnState_Connecting;
+    conn->EnableWriting();
     return conn;
 }
