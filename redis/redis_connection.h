@@ -70,7 +70,7 @@ private:
     static uint64_t next_conn_id_;
     EventLoop *event_loop_;
     const uint64_t conn_id_;
-    redisAsyncContext *redis_context_;
+    redisAsyncContext *context_;
     std::unique_ptr<Eventor> eventor_;
     InetAddr local_addr_;
     InetAddr peer_addr_;

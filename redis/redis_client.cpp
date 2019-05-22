@@ -244,7 +244,6 @@ void RedisClient::OnRedisReply(RedisReplyCallback cb, RedisConnectionPtr conn, r
         event_loop_->CancelTimer(iter->second);
         timer_ids_.erase(iter);
     }
-
     cb(reply);
 
     if (conn->Closed())

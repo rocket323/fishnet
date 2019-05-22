@@ -14,7 +14,7 @@ RedisConnection::RedisConnection(EventLoop *event_loop, redisAsyncContext *conte
                                  const InetAddr &peer_addr)
     : event_loop_(event_loop),
       conn_id_(__sync_fetch_and_add(&next_conn_id_, 1)),
-      redis_context_(context),
+      context_(context),
       eventor_(new Eventor(event_loop, context->c.fd)),
       local_addr_(local_addr),
       peer_addr_(peer_addr),
@@ -26,13 +26,13 @@ RedisConnection::RedisConnection(EventLoop *event_loop, redisAsyncContext *conte
 RedisConnection::~RedisConnection()
 {
     // Help find memory leaks
-    assert(redis_context_ == NULL);
+    assert(context_ == NULL);
 }
 
 int RedisConnection::Execv(const RedisReplyCallback &cb, const char *fmt, va_list ap)
 {
     active_ts_ = Util::CurrentSystemTimeMillis();
-    int status = redisAsyncCommand(redis_context_, OnRedisReply, NULL, fmt, ap);
+    int status = redisAsyncCommand(context_, OnRedisReply, NULL, fmt, ap);
     if (status != REDIS_OK)
         return NET_ERR;
 
@@ -52,7 +52,7 @@ int RedisConnection::Exec(const RedisReplyCallback &cb, const char *fmt, ...)
 int RedisConnection::Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen)
 {
     active_ts_ = Util::CurrentSystemTimeMillis();
-    int status = redisAsyncCommandArgv(redis_context_, OnRedisReply, NULL, argc, argv, argvlen);
+    int status = redisAsyncCommandArgv(context_, OnRedisReply, NULL, argc, argv, argvlen);
     if (status != REDIS_OK)
         return NET_ERR;
 
@@ -109,8 +109,8 @@ void RedisConnection::OnConnect(const redisAsyncContext *context, int status)
     if (status != REDIS_OK)
     {
         // We know redisAsyncContext is freeing,
-        // set redis_context_ to NULL and close wrap RedisConnection.
-        conn->redis_context_ = NULL;
+        // set context_ to NULL and close wrap RedisConnection.
+        conn->context_ = NULL;
         conn->HandleClose();
     }
 }
@@ -119,11 +119,11 @@ void RedisConnection::OnDisconnect(const redisAsyncContext *context, int status)
 {
     auto conn = static_cast<RedisConnection *>(context->ev.data);
 
-    // We know it is not in HandleClose() when redis_context_ is not NULL,
+    // We know it is not in HandleClose() when context_ is not NULL,
     // so close RedisConnection by calling HandleClose().
-    if (conn->redis_context_ != NULL)
+    if (conn->context_ != NULL)
     {
-        conn->redis_context_ = NULL;
+        conn->context_ = NULL;
         conn->HandleClose();
     }
 }
@@ -149,15 +149,15 @@ void RedisConnection::HandleEvents(int revents)
 void RedisConnection::HandleRead()
 {
     event_loop_->AssertIsCurrent();
-    if (redis_context_)
-        redisAsyncHandleRead(redis_context_);
+    if (context_)
+        redisAsyncHandleRead(context_);
 }
 
 void RedisConnection::HandleWrite()
 {
     event_loop_->AssertIsCurrent();
-    if (redis_context_)
-        redisAsyncHandleWrite(redis_context_);
+    if (context_)
+        redisAsyncHandleWrite(context_);
 }
 
 void RedisConnection::HandleError()
@@ -173,13 +173,13 @@ void RedisConnection::HandleClose()
         return;
     closed_ = true;
 
-    if (redis_context_ != nullptr)
+    if (context_ != nullptr)
     {
         // Use redisAsyncFree instead of redisAsyncDisconnect()
         // because redisAsyncDisconnect() don't release context immediately
         // when there are pending replys in redis context.
-        redisAsyncContext *context = redis_context_;
-        redis_context_ = NULL;
+        redisAsyncContext *context = context_;
+        context_ = NULL;
         redisAsyncFree(context);
     }
 

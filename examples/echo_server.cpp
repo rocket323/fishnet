@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     if (argc >= 2)
         port = atoi(argv[1]);
 
-    TcpServer server(EventLoop::Current(), InetAddr(12345));
+    TcpServer server(EventLoop::Current(), InetAddr(port));
     server.SetConnectionCallback(OnNewConn);
     server.SetCloseCallback(OnCloseConn);
     server.SetReadCallback(OnMsg);

@@ -7,7 +7,7 @@ void OnReply2(redisReply *reply, RedisClient *client, int idx)
 {
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
-        printf("redis reply error\n");
+        printf("error: %s\n", reply ? reply->str : "nil reply");
         EventLoop::Current()->Stop();
         return;
     }
@@ -23,11 +23,18 @@ void OnReply(redisReply *reply, RedisClient *client, int idx)
 {
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
-        printf("redis reply error\n");
+        printf("error: %s\n", reply ? reply->str : "nil reply");
         EventLoop::Current()->Stop();
         return;
     }
-    printf("%s\n", reply->str);
+    if (reply->type == REDIS_REPLY_NIL)
+        puts("<nil>");
+    else if (reply->type == REDIS_REPLY_ARRAY)
+        puts("<array>");
+    else if (reply->type == REDIS_REPLY_INTEGER)
+        printf("%lld\n", reply->integer);
+    else
+        printf("%s\n", reply->str);
     EventLoop::Current()->Stop();
 }
 

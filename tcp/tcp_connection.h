@@ -55,7 +55,7 @@ public:
     void EnableWriting();
     void DisableWriting();
 
-    time_t LastActiveTime() const { last_active_time_; }
+    time_t LastActiveTime() const { return last_active_time_; }
     const std::string &ErrMsg() const { return err_msg_; }
     ConnState GetState() const { return state_; }
     EventLoop *GetEventLoop() { return event_loop_; }
