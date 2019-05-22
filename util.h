@@ -5,6 +5,7 @@ class Util
 {
 public:
     static int64_t CurrentSystemTime() { return 0; }
+    static int64_t CurrentSystemTimeMillis() { return 0; }
 };
 
 #ifdef _WIN32
