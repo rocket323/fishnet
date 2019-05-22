@@ -60,11 +60,6 @@ int RedisConnection::Exec(const RedisReplyCallback &cb, int argc, const char **a
     return NET_OK;
 }
 
-void RedisConnection::Close()
-{
-    HandleClose();
-}
-
 void RedisConnection::OnRedisReply(redisAsyncContext *context, void *reply, void *privdata)
 {
     auto conn = static_cast<RedisConnection *>(context->ev.data);
@@ -96,6 +91,8 @@ RedisConnectionPtr RedisConnection::Connect(EventLoop *event_loop, const InetAdd
     redisAsyncSetDisconnectCallback(context, OnDisconnect);
     conn->EnableReading();
     conn->EnableWriting();
+
+    return conn;
 }
 
 void RedisConnection::OnConnect(const redisAsyncContext *context, int status)
@@ -106,26 +103,16 @@ void RedisConnection::OnConnect(const redisAsyncContext *context, int status)
     if (conn->connect_callback_)
         conn->connect_callback_(guard, status == REDIS_OK ? NET_OK : NET_ERR);
 
+    // We know redisAsyncContext is freeing,
+    // set context_ to NULL and close wrap RedisConnection.
     if (status != REDIS_OK)
-    {
-        // We know redisAsyncContext is freeing,
-        // set context_ to NULL and close wrap RedisConnection.
-        conn->context_ = NULL;
-        conn->HandleClose();
-    }
+        conn->HandleClose(true);
 }
 
 void RedisConnection::OnDisconnect(const redisAsyncContext *context, int status)
 {
     auto conn = static_cast<RedisConnection *>(context->ev.data);
-
-    // We know it is not in HandleClose() when context_ is not NULL,
-    // so close RedisConnection by calling HandleClose().
-    if (conn->context_ != NULL)
-    {
-        conn->context_ = NULL;
-        conn->HandleClose();
-    }
+    conn->HandleClose(true);
 }
 
 void RedisConnection::HandleEvents(int revents)
@@ -166,20 +153,24 @@ void RedisConnection::HandleError()
     HandleClose();
 }
 
-void RedisConnection::HandleClose()
+// We need to know the reason of closing RedisConnection,
+// if it's closed from a hiredis callback,
+// we don't free `context_` because hiredis would free it when the callback return.
+void RedisConnection::HandleClose(bool from_callback)
 {
     event_loop_->AssertIsCurrent();
     if (Closed())
         return;
     closed_ = true;
 
-    if (context_ != nullptr)
+    auto context = context_;
+    context_ = nullptr;
+
+    if (!from_callback)
     {
         // Use redisAsyncFree instead of redisAsyncDisconnect()
         // because redisAsyncDisconnect() don't release context immediately
         // when there are pending replys in redis context.
-        redisAsyncContext *context = context_;
-        context_ = NULL;
         redisAsyncFree(context);
     }
 

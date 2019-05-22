@@ -48,7 +48,7 @@ public:
     const InetAddr &PeerAddr() const { return peer_addr_; }
 
     uint64_t Id() const { return conn_id_; }
-    void Close();
+    void Close() { HandleClose(); }
     bool Closed() const { return closed_; }
     bool IdleExpired(int timeout) { return (Util::CurrentSystemTimeMillis() - active_ts_) >= timeout; }
 
@@ -64,7 +64,7 @@ private:
     void HandleRead();
     void HandleWrite();
     void HandleError();
-    void HandleClose();
+    void HandleClose(bool from_callback = false);
 
 private:
     static uint64_t next_conn_id_;
