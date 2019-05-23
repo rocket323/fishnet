@@ -19,7 +19,7 @@ void OnReply2(redisReply *reply, RedisClient *client, int idx)
         EventLoop::Current()->Stop();
 }
 
-void OnReply(redisReply *reply, RedisClient *client, int idx)
+void OnReply(redisReply *reply)
 {
     if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
     {
@@ -44,21 +44,9 @@ int main(int argc, char **argv)
     RedisClient client(loop, InetAddr(6379));
 
     if (argc > 1)
-    {
-        std::vector<const char *> argv2;
-        std::vector<size_t> argvlen;
-        for (int i = 1; i < argc; i++)
-        {
-            argv2.push_back(argv[i]);
-            argvlen.push_back(strlen(argv[i]));
-        }
-
-        int ret = client.Exec(std::bind(&OnReply, _1, &client, 0), 1000, argc - 1, argv2.data(), argvlen.data());
-    }
+        client.Exec(OnReply, 1000, argc - 1, (const char **)(argv + 1));
     else
-    {
-        int ret = client.Exec(std::bind(&OnReply2, _1, &client, 0), 1000, "PING");
-    }
+        client.Exec(std::bind(&OnReply2, _1, &client, 0), 1000, "PING");
 
     loop->Loop();
     return 0;

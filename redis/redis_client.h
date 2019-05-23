@@ -19,7 +19,8 @@ public:
 
     int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...);
     int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, va_list ap);
-    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, int argc, const char **argv, const size_t *argvlen);
+    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, int argc, const char **argv,
+             const size_t *argvlen = nullptr);
     int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommand cmd);
     int MultiExec(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommands cmds);
 

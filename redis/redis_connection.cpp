@@ -1,5 +1,6 @@
 #include "redis_connection.h"
 #include <assert.h>
+#include <cstring>
 #include "async.h"
 #include "event_loop.h"
 #include "hiredis.h"
@@ -52,6 +53,15 @@ int RedisConnection::Exec(const RedisReplyCallback &cb, const char *fmt, ...)
 int RedisConnection::Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen)
 {
     active_ts_ = Util::CurrentSystemTimeMillis();
+
+    std::vector<size_t> _argvlen;
+    if (argvlen == nullptr)
+    {
+        for (int i = 0; i < argc; i++)
+            _argvlen.push_back(strlen(argv[i]));
+        argvlen = _argvlen.data();
+    }
+
     int status = redisAsyncCommandArgv(context_, OnRedisReply, NULL, argc, argv, argvlen);
     if (status != REDIS_OK)
         return NET_ERR;

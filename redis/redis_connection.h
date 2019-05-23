@@ -32,7 +32,7 @@ public:
     // Exec redis command
     int Execv(const RedisReplyCallback &cb, const char *fmt, va_list ap);
     int Exec(const RedisReplyCallback &cb, const char *fmt, ...);
-    int Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen);
+    int Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen = nullptr);
 
     // Use for RedisAdapter
     void EnableReading() { eventor_->EnableReading(); }
