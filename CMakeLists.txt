@@ -10,7 +10,7 @@ SET(DEPS_DIR ${CMAKE_ROOT_DIR}/deps)
 SET(GTEST_DIR ${DEPS_DIR}/googletest/googletest)
 SET(GTEST_INCLUDE ${GTEST_DIR}/include)
 SET(GTEST_LIB_DIR ${CMAKE_ROOT_DIR}/build/lib/)
-SET(GTEST_ALL_LIB ${GTEST_LIB_DIR}/libgtest.a ${GTEST_LIB_DIR}/libgtest_main.a)
+SET(GTEST_ALL_LIB ${GTEST_LIB_DIR}/libgtest_main.a ${GTEST_LIB_DIR}/libgtest.a)
 
 # hiredis
 SET(HIREDIS_DIR ${DEPS_DIR}/hiredis/)

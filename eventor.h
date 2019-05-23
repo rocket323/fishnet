@@ -30,7 +30,7 @@ public:
     uint32_t Events() const { return m_events; }
     void SetRevents(uint32_t revents) { m_revents = revents; }
 
-    void RemoveSelf();
+    void Remove();
 
 private:
     void Update();

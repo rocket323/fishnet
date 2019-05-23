@@ -46,7 +46,7 @@ void Acceptor::Stop()
     if (sock_)
     {
         assert(eventor_);
-        eventor_->RemoveSelf();
+        eventor_->Remove();
         eventor_.reset();
         sock_.reset();
     }

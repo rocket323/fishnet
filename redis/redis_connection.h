@@ -29,17 +29,17 @@ public:
                     const InetAddr &peer_addr);
     ~RedisConnection();
 
-    // Exec redis command
-    int Execv(const RedisReplyCallback &cb, const char *fmt, va_list ap);
-    int Exec(const RedisReplyCallback &cb, const char *fmt, ...);
-    int Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen = nullptr);
+    // Do redis command
+    int Dov(const RedisReplyCallback &cb, const char *fmt, va_list ap);
+    int Do(const RedisReplyCallback &cb, const char *fmt, ...);
+    int Do(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen = nullptr);
 
     // Use for RedisAdapter
     void EnableReading() { eventor_->EnableReading(); }
     void DisableReading() { eventor_->DisableReading(); }
     void EnableWriting() { eventor_->EnableWriting(); }
     void DisableWriting() { eventor_->DisableWriting(); }
-    void Remove() { eventor_->RemoveSelf(); }
+    void Remove() { eventor_->Remove(); }
 
     void SetConnectCallback(const ConnectCallback &cb) { connect_callback_ = cb; }
     void SetDisconnectCallback(const DisconnectCallback &cb) { disconnect_callback_ = cb; }

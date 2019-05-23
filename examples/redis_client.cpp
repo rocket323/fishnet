@@ -14,7 +14,7 @@ void OnReply2(redisReply *reply, RedisClient *client, int idx)
     printf("%s\n", reply->str);
 
     if (idx < 10)
-        client->Exec(std::bind(&OnReply2, _1, client, idx + 1), 1000, "PING");
+        client->Do(std::bind(&OnReply2, _1, client, idx + 1), 1000, "PING");
     else
         EventLoop::Current()->Stop();
 }
@@ -44,9 +44,9 @@ int main(int argc, char **argv)
     RedisClient client(loop, InetAddr(6379));
 
     if (argc > 1)
-        client.Exec(OnReply, 1000, argc - 1, (const char **)(argv + 1));
+        client.Do(OnReply, 1000, argc - 1, (const char **)(argv + 1));
     else
-        client.Exec(std::bind(&OnReply2, _1, &client, 0), 1000, "PING");
+        client.Do(std::bind(&OnReply2, _1, &client, 0), 1000, "PING");
 
     loop->Loop();
     return 0;

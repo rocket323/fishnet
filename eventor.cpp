@@ -39,7 +39,7 @@ void Eventor::DiableAll()
     Update();
 }
 
-void Eventor::RemoveSelf()
+void Eventor::Remove()
 {
     m_events = 0;
     m_event_loop->RemoveEvents(this);

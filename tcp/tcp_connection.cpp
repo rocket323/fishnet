@@ -353,7 +353,7 @@ void TcpConnection::HandleClose()
     state_ = ConnState_Disconnected;
 
     // Remove events from poller
-    eventor_->RemoveSelf();
+    eventor_->Remove();
 
     TcpConnectionPtr guard(shared_from_this());
 

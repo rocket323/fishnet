@@ -17,12 +17,12 @@ public:
     RedisClient(EventLoop *event_loop, const std::vector<InetAddr> addrs, const std::string &passwd = "");
     ~RedisClient();
 
-    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...);
-    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, va_list ap);
-    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, int argc, const char **argv,
-             const size_t *argvlen = nullptr);
-    int Exec(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommand cmd);
-    int MultiExec(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommands cmds);
+    int Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...);
+    int Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, va_list ap);
+    int Do(const RedisReplyCallback &cb, int64_t timeout_ms, int argc, const char **argv,
+           const size_t *argvlen = nullptr);
+    int Do(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommand cmd);
+    int DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommands cmds);
 
 private:
     InetAddr GetNextAddr();

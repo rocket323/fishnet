@@ -30,7 +30,7 @@ RedisConnection::~RedisConnection()
     assert(context_ == NULL);
 }
 
-int RedisConnection::Execv(const RedisReplyCallback &cb, const char *fmt, va_list ap)
+int RedisConnection::Dov(const RedisReplyCallback &cb, const char *fmt, va_list ap)
 {
     active_ts_ = Util::CurrentSystemTimeMillis();
     int status = redisAsyncCommand(context_, OnRedisReply, NULL, fmt, ap);
@@ -41,16 +41,16 @@ int RedisConnection::Execv(const RedisReplyCallback &cb, const char *fmt, va_lis
     return NET_OK;
 }
 
-int RedisConnection::Exec(const RedisReplyCallback &cb, const char *fmt, ...)
+int RedisConnection::Do(const RedisReplyCallback &cb, const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    int status = Execv(cb, fmt, ap);
+    int status = Dov(cb, fmt, ap);
     va_end(ap);
     return status;
 }
 
-int RedisConnection::Exec(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen)
+int RedisConnection::Do(const RedisReplyCallback &cb, int argc, const char **argv, const size_t *argvlen)
 {
     active_ts_ = Util::CurrentSystemTimeMillis();
 
