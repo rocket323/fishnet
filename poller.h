@@ -11,33 +11,33 @@ class Eventor;
 class Poller
 {
 public:
-    static const int EPOLL_EVENT_SIZE = 1024;
-
-    enum
+    // File Event Flags
+    enum EventFlag
     {
-        POLLNONE = 0,
-        POLLIN = EPOLLIN,
-        POLLOUT = EPOLLOUT,
-        POLLERR = EPOLLERR,
-        POLLHUB = EPOLLHUP,
+        NONE = 0,
+        READABLE = 1 << 0,
+        WRITABLE = 1 << 1,
     };
 
     Poller(EventLoop *event_loop);
-    ~Poller();
+    virtual ~Poller();
 
-    bool UpdateEvents(Eventor *eventor);
-    bool RemoveEvents(Eventor *eventor);
+    static Poller *NewDefaultPoller(EventLoop *event_loop);
 
-    void Poll(int timeout_ms, std::vector<Eventor *> &active_eventors);
+    // Poll the I/O events.
+    virtual void Poll(int timeout_ms, std::vector<Eventor *> &active_eventors) = 0;
+
+    // Change the interested events.
+    virtual bool UpdateEvents(Eventor *eventor) = 0;
+
+    // Remove the events.
+    virtual bool RemoveEvents(Eventor *eventor) = 0;
+
+protected:
+    std::map<int, Eventor *> eventors_;
 
 private:
-    bool EpollOperate(int operation, Eventor *eventor);
-
-private:
-    EventLoop *m_event_loop;
-    int m_epoll_fd;
-    struct epoll_event m_epoll_events[EPOLL_EVENT_SIZE];
-    std::map<int, Eventor *> m_eventors;
+    EventLoop *event_loop_;
 };
 
 #endif

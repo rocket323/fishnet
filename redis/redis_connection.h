@@ -64,7 +64,7 @@ private:
     void HandleRead();
     void HandleWrite();
     void HandleError();
-    void HandleClose(bool from_callback = false);
+    void HandleClose(bool from_hiredis = false);
 
 private:
     static uint64_t next_conn_id_;

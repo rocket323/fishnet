@@ -35,7 +35,7 @@ EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id()),
       m_wakeup_fd(CreateEventFd()),
       m_wakeup_eventor(new Eventor(this, m_wakeup_fd)),
-      m_poller(new Poller(this)),
+      m_poller(Poller::NewDefaultPoller(this)),
       m_timer_queue(new TimerQueue()),
       m_running(false)
 {

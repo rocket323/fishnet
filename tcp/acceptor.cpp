@@ -54,7 +54,7 @@ void Acceptor::Stop()
 
 void Acceptor::HandleEvents(int revents)
 {
-    if (revents & Poller::POLLIN)
+    if (revents & Poller::READABLE)
         HandleRead();
 }
 

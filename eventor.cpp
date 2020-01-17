@@ -1,7 +1,8 @@
 #include "eventor.h"
 #include "event_loop.h"
 
-Eventor::Eventor(EventLoop *event_loop, int fd) : m_event_loop(event_loop), m_fd(fd), m_events(0), m_revents(0)
+Eventor::Eventor(EventLoop *event_loop, int fd)
+    : event_loop_(event_loop), fd_(fd), interest_events_(0), polled_events_(0)
 {
 }
 
@@ -11,48 +12,48 @@ Eventor::~Eventor()
 
 void Eventor::EnableReading()
 {
-    m_events |= Poller::POLLIN;
+    interest_events_ |= Poller::READABLE;
     Update();
 }
 
 void Eventor::EnableWriting()
 {
-    m_events |= Poller::POLLOUT;
+    interest_events_ |= Poller::WRITABLE;
     Update();
 }
 
 void Eventor::DisableReading()
 {
-    m_events &= ~Poller::POLLIN;
+    interest_events_ &= ~Poller::READABLE;
     Update();
 }
 
 void Eventor::DisableWriting()
 {
-    m_events &= ~Poller::POLLOUT;
+    interest_events_ &= ~Poller::WRITABLE;
     Update();
 }
 
 void Eventor::DiableAll()
 {
-    m_events = Poller::POLLNONE;
+    interest_events_ = Poller::NONE;
     Update();
 }
 
 void Eventor::Remove()
 {
-    m_events = 0;
-    m_event_loop->RemoveEvents(this);
+    interest_events_ = Poller::NONE;
+    event_loop_->RemoveEvents(this);
 }
 
 void Eventor::Update()
 {
-    m_event_loop->UpdateEvents(this);
+    event_loop_->UpdateEvents(this);
 }
 
 void Eventor::HandleEvents()
 {
-    uint32_t revents = m_revents;
-    m_revents = 0;
-    m_events_callback(revents);
+    uint32_t polled_events = polled_events_;
+    polled_events_ = Poller::NONE;
+    events_callback_(polled_events);
 }

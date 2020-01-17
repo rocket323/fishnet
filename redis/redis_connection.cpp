@@ -113,8 +113,7 @@ void RedisConnection::OnConnect(const redisAsyncContext *context, int status)
     if (conn->connect_callback_)
         conn->connect_callback_(guard, status == REDIS_OK ? NET_OK : NET_ERR);
 
-    // We know redisAsyncContext is freeing,
-    // set context_ to NULL and close wrap RedisConnection.
+    // Hiredis connect failed, we should close our RedisConnection.
     if (status != REDIS_OK)
         conn->HandleClose(true);
 }
@@ -122,6 +121,8 @@ void RedisConnection::OnConnect(const redisAsyncContext *context, int status)
 void RedisConnection::OnDisconnect(const redisAsyncContext *context, int status)
 {
     auto conn = static_cast<RedisConnection *>(context->ev.data);
+
+    // Hiredis disconnected, we should close our RedisConnection.
     conn->HandleClose(true);
 }
 
@@ -130,16 +131,10 @@ void RedisConnection::HandleEvents(int revents)
     // Prevent connection beging destroyed in HandleXXX().
     RedisConnectionPtr guard(shared_from_this());
 
-    if (revents & Poller::POLLERR)
-        HandleError();
-
-    if ((revents & Poller::POLLHUB) & (revents & ~Poller::POLLIN))
-        HandleClose();
-
-    if (revents & Poller::POLLIN)
+    if (revents & Poller::READABLE)
         HandleRead();
 
-    if (revents & Poller::POLLOUT)
+    if (revents & Poller::WRITABLE)
         HandleWrite();
 }
 
@@ -164,9 +159,9 @@ void RedisConnection::HandleError()
 }
 
 // We need to know the reason of closing RedisConnection,
-// if it's closed from a hiredis callback,
+// if it's closed from hiredis context,
 // we don't free `context_` because hiredis would free it when the callback return.
-void RedisConnection::HandleClose(bool from_callback)
+void RedisConnection::HandleClose(bool from_hiredis)
 {
     event_loop_->AssertIsCurrent();
     if (Closed())
@@ -176,7 +171,7 @@ void RedisConnection::HandleClose(bool from_callback)
     auto context = context_;
     context_ = nullptr;
 
-    if (!from_callback)
+    if (!from_hiredis)
     {
         // Use redisAsyncFree instead of redisAsyncDisconnect()
         // because redisAsyncDisconnect() don't release context immediately

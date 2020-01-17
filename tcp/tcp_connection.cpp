@@ -249,17 +249,6 @@ void TcpConnection::HandleEvents(int revents)
     TcpConnectionPtr guard(shared_from_this());
 
     last_active_time_ = Util::CurrentSystemTime();
-    if (revents & Poller::POLLERR)
-    {
-        HandleError();
-        return;
-    }
-
-    if ((revents & Poller::POLLHUB) && (revents & ~Poller::POLLIN))
-    {
-        HandleClose();
-        return;
-    }
 
     if (state_ == ConnState_Connecting)
     {
@@ -280,10 +269,10 @@ void TcpConnection::HandleEvents(int revents)
         }
     }
 
-    if (revents & Poller::POLLIN)
+    if (revents & Poller::READABLE)
         HandleRead();
 
-    if (revents & Poller::POLLOUT)
+    if (revents & Poller::WRITABLE)
         HandleWrite();
 }
 
