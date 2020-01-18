@@ -5,14 +5,28 @@
 #include "event_loop.h"
 #include "eventor.h"
 
-EpollPoller::EpollPoller(EventLoop *event_loop) : Poller(event_loop), epoll_fd_(::epoll_create(EPOLL_EVENT_SIZE))
+static const int EPOLL_EVENT_SIZE = 1024;
+
+struct PollerApiState
 {
-    assert(epoll_fd_ >= 0);
+    int epoll_fd_ = -1;
+    struct epoll_event epoll_events_[EPOLL_EVENT_SIZE];
+};
+
+EpollPoller::EpollPoller(EventLoop *event_loop) : event_loop_(event_loop), epoll_fd_(::epoll_create(EPOLL_EVENT_SIZE))
+{
+    PollerApiState *state = new PollerApiState;
+    state->epoll_fd_ = epoll_create(EPOLL_EVENT_SIZE);
+    assert(state->epoll_fd_ >= 0);
+    api_data_ = state;
 }
 
 EpollPoller::~EpollPoller()
 {
-    ::close(epoll_fd_);
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+    close(state->epoll_fd_);
+
+    delete (PollerApiData *)api_data_;
 }
 
 bool EpollPoller::UpdateEvents(Eventor *eventor)
@@ -46,6 +60,8 @@ bool EpollPoller::RemoveEvents(Eventor *eventor)
 
 bool EpollPoller::EpollOperate(int op, Eventor *eventor)
 {
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+
     struct epoll_event ev;
     memset(&ev, 0, sizeof(ev));
     int mask = eventor->InterestEvents();
@@ -57,15 +73,17 @@ bool EpollPoller::EpollOperate(int op, Eventor *eventor)
     if (mask & Poller::WRITABLE)
         ev.events |= EPOLLOUT;
 
-    if (::epoll_ctl(epoll_fd_, op, eventor->Fd(), &ev) < 0)
+    if (epoll_ctl(state->epoll_fd_, op, eventor->Fd(), &ev) < 0)
         return false;
     return true;
 }
 
 void EpollPoller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
 {
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+
     eventors.clear();
-    int num_events = ::epoll_wait(epoll_fd_, epoll_events_, EPOLL_EVENT_SIZE, timeout_ms);
+    int num_events = epoll_wait(state->epoll_fd_, state->epoll_events_, EPOLL_EVENT_SIZE, timeout_ms);
     if (num_events < 0)
     {
         if (errno != EINTR)
@@ -83,7 +101,7 @@ void EpollPoller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
         for (int i = 0; i < num_events; i++)
         {
             int mask = 0;
-            auto &e = epoll_events_[i];
+            auto &e = state->epoll_events_[i];
 
             if (e.events & EPOLLIN)
                 mask |= Poller::READABLE;

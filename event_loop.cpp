@@ -1,6 +1,6 @@
 #include "event_loop.h"
 #include <assert.h>
-#include <sys/eventfd.h>
+// #include <sys/eventfd.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include "eventor.h"
@@ -8,15 +8,6 @@
 #include "timer_queue.h"
 
 using namespace std::placeholders;
-
-static int CreateEventFd()
-{
-    int event_fd = ::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
-    if (event_fd < 0)
-        abort();
-
-    return event_fd;
-}
 
 int64_t CurrentSystemTimeMillis()
 {
@@ -33,19 +24,14 @@ time_t CurrentSystemTime()
 
 EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id()),
-      m_wakeup_fd(CreateEventFd()),
-      m_wakeup_eventor(new Eventor(this, m_wakeup_fd)),
-      m_poller(Poller::NewDefaultPoller(this)),
+      m_poller(new Poller(this)),
       m_timer_queue(new TimerQueue()),
       m_running(false)
 {
-    m_wakeup_eventor->SetEventsCallback(std::bind(&EventLoop::HandleEvents, this, _1));
-    m_wakeup_eventor->EnableReading();
 }
 
 EventLoop::~EventLoop()
 {
-    ::close(m_wakeup_fd);
 }
 
 __thread EventLoop *tls_ptr = NULL;
@@ -67,8 +53,8 @@ void EventLoop::Post(const Task &task)
 
     // wake up to run task when this is the first task
     // and not in current loop thread
-    if (is_empty && !IsCurrent())
-        WakeUp();
+    // if (is_empty && !IsCurrent())
+    //     WakeUp();
 }
 
 void EventLoop::UpdateEvents(Eventor *eventor)
@@ -177,20 +163,6 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
 void EventLoop::Stop()
 {
     m_running = false;
-    if (!IsCurrent())
-        WakeUp();
-}
-
-void EventLoop::HandleEvents(int revents)
-{
-    uint64_t dummy = 0;
-    ssize_t ret = ::read(m_wakeup_fd, &dummy, sizeof(dummy));
-    (void)ret;
-}
-
-void EventLoop::WakeUp()
-{
-    uint64_t one = 1;
-    ssize_t ret = ::write(m_wakeup_fd, &one, sizeof(one));
-    (void)ret;
+    // if (!IsCurrent())
+    //     WakeUp();
 }

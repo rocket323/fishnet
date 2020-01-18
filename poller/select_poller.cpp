@@ -1,4 +1,3 @@
-#include "select_poller.h"
 #include <sys/select.h>
 #include <sys/time.h>
 #include <cstring>
@@ -6,72 +5,94 @@
 #include "event_loop.h"
 #include "eventor.h"
 
-SelectPoller::SelectPoller(EventLoop *event_loop) : Poller(event_loop), max_fd_(-1)
+struct PollerApiData
 {
+    int max_fd_ = -1;
+
+    // Interest fd sets.
+    fd_set read_fds_;
+    fd_set write_fds_;
+
+    // Tmp fd sets.
+    fd_set tmp_read_fds_;
+    fd_set tmp_write_fds_;
+    fd_set tmp_err_fds_;
+};
+
+Poller::Poller(EventLoop *event_loop) : event_loop_(event_loop)
+{
+    api_data_ = new PollerApiData;
 }
 
-SelectPoller::~SelectPoller()
+Poller::~Poller()
 {
+    delete (PollerApiData *)api_data_;
 }
 
-bool SelectPoller::UpdateEvents(Eventor *eventor)
+bool Poller::UpdateEvents(Eventor *eventor)
 {
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+
     int mask = eventor->InterestEvents();
     // Clear all flags first.
-    FD_CLR(eventor->Fd(), &read_fds_);
-    FD_CLR(eventor->Fd(), &write_fds_);
+    FD_CLR(eventor->Fd(), &state->read_fds_);
+    FD_CLR(eventor->Fd(), &state->write_fds_);
 
     if (mask & Poller::READABLE)
-        FD_SET(eventor->Fd(), &read_fds_);
+        FD_SET(eventor->Fd(), &state->read_fds_);
     if (mask & Poller::WRITABLE)
-        FD_SET(eventor->Fd(), &write_fds_);
+        FD_SET(eventor->Fd(), &state->write_fds_);
 
     if (!eventors_.count(eventor->Fd()))
         eventors_[eventor->Fd()] = eventor;
 
     // Update max_fd_.
-    if (eventor->Fd() > max_fd_)
-        max_fd_ = eventor->Fd();
+    if (eventor->Fd() > state->max_fd_)
+        state->max_fd_ = eventor->Fd();
 
     return true;
 }
 
-bool SelectPoller::RemoveEvents(Eventor *eventor)
+bool Poller::RemoveEvents(Eventor *eventor)
 {
-    FD_CLR(eventor->Fd(), &read_fds_);
-    FD_CLR(eventor->Fd(), &write_fds_);
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+
+    FD_CLR(eventor->Fd(), &state->read_fds_);
+    FD_CLR(eventor->Fd(), &state->write_fds_);
 
     eventors_.erase(eventor->Fd());
 
     // Update max_fd_.
-    if (eventor->Fd() == max_fd_)
+    if (eventor->Fd() == state->max_fd_)
     {
-        max_fd_ = -1;
+        state->max_fd_ = -1;
         for (auto &kv : eventors_)
         {
-            if (kv.second->Fd() > max_fd_)
-                max_fd_ = kv.second->Fd();
+            if (kv.second->Fd() > state->max_fd_)
+                state->max_fd_ = kv.second->Fd();
         }
     }
 
     return true;
 }
 
-void SelectPoller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
+void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
 {
+    PollerApiData *state = static_cast<PollerApiData *>(api_data_);
+
     eventors.clear();
-    if (max_fd_ == -1)
+    if (state->max_fd_ == -1)
         return;
 
-    memcpy(&tmp_read_fds_, &read_fds_, sizeof(fd_set));
-    memcpy(&tmp_write_fds_, &write_fds_, sizeof(fd_set));
-    memset(&tmp_err_fds_, 0, sizeof(fd_set));
+    memcpy(&state->tmp_read_fds_, &state->read_fds_, sizeof(fd_set));
+    memcpy(&state->tmp_write_fds_, &state->write_fds_, sizeof(fd_set));
+    memset(&state->tmp_err_fds_, 0, sizeof(fd_set));
 
     struct timeval tv;
     tv.tv_sec = timeout_ms / 1000;
     tv.tv_usec = (timeout_ms % 1000) * 1000;
 
-    int num = ::select(max_fd_ + 1, &tmp_read_fds_, &tmp_write_fds_, &tmp_err_fds_, &tv);
+    int num = ::select(state->max_fd_ + 1, &state->tmp_read_fds_, &state->tmp_write_fds_, &state->tmp_err_fds_, &tv);
     if (num > 0)
     {
         for (auto &kv : eventors_)
@@ -81,13 +102,13 @@ void SelectPoller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
                 continue;
 
             int mask = 0;
-            if (eventor->Reading() && FD_ISSET(eventor->Fd(), &tmp_read_fds_))
+            if (eventor->Reading() && FD_ISSET(eventor->Fd(), &state->tmp_read_fds_))
                 mask |= Poller::READABLE;
 
-            if (eventor->Writing() && FD_ISSET(eventor->Fd(), &tmp_write_fds_))
+            if (eventor->Writing() && FD_ISSET(eventor->Fd(), &state->tmp_write_fds_))
                 mask |= Poller::WRITABLE;
 
-            if (FD_ISSET(eventor->Fd(), &tmp_err_fds_))
+            if (FD_ISSET(eventor->Fd(), &state->tmp_err_fds_))
                 mask |= (Poller::READABLE | Poller::WRITABLE);
 
             eventor->SetPolledEvents(mask);

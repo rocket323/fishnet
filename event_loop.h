@@ -98,10 +98,6 @@ private:
     // thread id
     std::thread::id m_thread_id;
 
-    // wake up
-    int m_wakeup_fd;
-    std::unique_ptr<Eventor> m_wakeup_eventor;
-
     // poller
     std::mutex m_poller_mutex;
     std::unique_ptr<Poller> m_poller;

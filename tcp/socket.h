@@ -10,7 +10,7 @@ int Bind(int sockfd, const InetAddr &bind_addr);
 int CreateNonBlockingStreamSocket();
 bool SetNonBlocking(int sockfd, bool on);
 bool SetNoDelay(int sockfd, bool on);
-bool SetQuickAck(int sockfd, bool on);
+// bool SetQuickAck(int sockfd, bool on);
 bool SetReuseAddr(int sockfd, bool on);
 bool SetKeepAlive(int sockfd, bool on);
 bool SetRecvBuffSize(int sockfd, int size);
@@ -35,7 +35,7 @@ public:
 
     bool SetNonBlocking(bool on) { return sockets::SetNonBlocking(sock_fd_, on); }
     bool SetNoDelay(bool on) { return sockets::SetNoDelay(sock_fd_, on); }
-    bool SetQuickAck(bool on) { return sockets::SetQuickAck(sock_fd_, on); }
+    // bool SetQuickAck(bool on) { return sockets::SetQuickAck(sock_fd_, on); }
     bool SetReuseAddr(bool on) { return sockets::SetReuseAddr(sock_fd_, on); }
     bool SetKeepAlive(bool on) { return sockets::SetKeepAlive(sock_fd_, on); }
     bool SetRecvBuffSize(int size) { return sockets::SetRecvBuffSize(sock_fd_, size); }

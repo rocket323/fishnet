@@ -94,13 +94,13 @@ bool SetNoDelay(int sockfd, bool on)
     return true;
 }
 
-bool SetQuickAck(int sockfd, bool on)
-{
-    int val = on ? 1 : 0;
-    if (::setsockopt(sockfd, IPPROTO_TCP, TCP_QUICKACK, &val, sizeof(val)))
-        return false;
-    return true;
-}
+// bool SetQuickAck(int sockfd, bool on)
+// {
+//     int val = on ? 1 : 0;
+//     if (::setsockopt(sockfd, IPPROTO_TCP, TCP_QUICKACK, &val, sizeof(val)))
+//         return false;
+//     return true;
+// }
 
 bool SetReuseAddr(int sockfd, bool on)
 {

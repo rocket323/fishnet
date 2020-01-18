@@ -1,7 +1,6 @@
 #ifndef _NET_POLLER_H_
 #define _NET_POLLER_H_
 
-#include <sys/epoll.h>
 #include <map>
 #include <vector>
 
@@ -20,24 +19,21 @@ public:
     };
 
     Poller(EventLoop *event_loop);
-    virtual ~Poller();
-
-    static Poller *NewDefaultPoller(EventLoop *event_loop);
+    ~Poller();
 
     // Poll the I/O events.
-    virtual void Poll(int timeout_ms, std::vector<Eventor *> &active_eventors) = 0;
+    void Poll(int timeout_ms, std::vector<Eventor *> &active_eventors);
 
     // Change the interested events.
-    virtual bool UpdateEvents(Eventor *eventor) = 0;
+    bool UpdateEvents(Eventor *eventor);
 
     // Remove the events.
-    virtual bool RemoveEvents(Eventor *eventor) = 0;
-
-protected:
-    std::map<int, Eventor *> eventors_;
+    bool RemoveEvents(Eventor *eventor);
 
 private:
     EventLoop *event_loop_;
+    std::map<int, Eventor *> eventors_;
+    void *api_data_;
 };
 
 #endif
