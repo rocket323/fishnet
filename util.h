@@ -1,8 +1,7 @@
 #ifndef _NET_UTIL_H_
 #define _NET_UTIL_H_
 
-class Util
-{
+class Util {
 public:
     static int64_t CurrentSystemTime() { return 0; }
     static int64_t CurrentSystemTimeMillis() { return 0; }
@@ -19,10 +18,13 @@ public:
 #define unlikely(x) __builtin_expect(!!(x), false)
 #endif
 
-#define DEBUG(fmt, args...) printf("[debug]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
+#define DEBUG(fmt, args...) \
+    printf("[debug]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
 
-#define INFO(fmt, args...) printf("[info]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
+#define INFO(fmt, args...) \
+    printf("[info]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
 
-#define ERR(fmt, args...) printf("[error]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
+#define ERR(fmt, args...) \
+    printf("[error]%s::%s():%d|" fmt "\n", __FILE__, __FUNCTION__, __LINE__, ##args);
 
 #endif

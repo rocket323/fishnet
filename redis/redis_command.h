@@ -5,41 +5,33 @@
 #include <vector>
 class RedisConnection;
 
-class RedisCommand
-{
+class RedisCommand {
 public:
-    RedisCommand &operator<<(const std::string &str)
-    {
+    RedisCommand &operator<<(const std::string &str) {
         args_.push_back(str);
         return *this;
     }
-    RedisCommand &operator<<(const char *str)
-    {
+    RedisCommand &operator<<(const char *str) {
         args_.push_back(str);
         return *this;
     }
-    RedisCommand &operator<<(int val)
-    {
+    RedisCommand &operator<<(int val) {
         args_.push_back(std::to_string(static_cast<long long>(val)));
         return *this;
     }
-    RedisCommand &operator<<(unsigned val)
-    {
+    RedisCommand &operator<<(unsigned val) {
         args_.push_back(std::to_string(static_cast<unsigned long long>(val)));
         return *this;
     }
-    RedisCommand &operator<<(long long val)
-    {
+    RedisCommand &operator<<(long long val) {
         args_.push_back(std::to_string(static_cast<long long>(val)));
         return *this;
     }
-    RedisCommand &operator<<(unsigned long long val)
-    {
+    RedisCommand &operator<<(unsigned long long val) {
         args_.push_back(std::to_string(static_cast<unsigned long long>(val)));
         return *this;
     }
-    RedisCommand &operator<<(double val)
-    {
+    RedisCommand &operator<<(double val) {
         args_.push_back(std::to_string(static_cast<long double>(val)));
         return *this;
     }
@@ -50,11 +42,9 @@ private:
     std::vector<std::string> args_;
 };
 
-class RedisCommands
-{
+class RedisCommands {
 public:
-    RedisCommands &Add(const RedisCommand &cmd)
-    {
+    RedisCommands &Add(const RedisCommand &cmd) {
         cmds_.push_back(cmd);
         return *this;
     }

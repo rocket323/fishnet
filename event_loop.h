@@ -18,8 +18,7 @@ class Poller;
 typedef uint64_t TimerId;
 typedef std::function<void()> Task;
 
-class EventLoop
-{
+class EventLoop {
 public:
     ~EventLoop();
 
@@ -29,15 +28,13 @@ public:
 
     // this instance is the one runs in the current thread?
     // it's thread-safe
-    inline bool IsCurrent() const
-    {
+    inline bool IsCurrent() const {
         // current() might not initialized(the thread calls is_current()
         // could has no EventLoop instance constructed)
         return m_thread_id == std::this_thread::get_id();
     }
 
-    void AssertIsCurrent() const
-    {
+    void AssertIsCurrent() const {
         if (!IsCurrent())
             abort();
     }
@@ -47,16 +44,14 @@ public:
     // otherwise, the task is pushed into task queue
     // and wait the 'loop' thread to consume them.
     // they are thread-safe
-    inline void Dispatch(const Task &task)
-    {
+    inline void Dispatch(const Task &task) {
         if (IsCurrent())
             task();
         else
             Post(task);
     }
 
-    inline void Dispatch(Task &&task)
-    {
+    inline void Dispatch(Task &&task) {
         if (IsCurrent())
             task();
         else

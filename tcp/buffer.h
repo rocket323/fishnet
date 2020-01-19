@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-class Buffer
-{
+class Buffer {
 public:
     static const size_t INITIAL_SIZE = 1024;
 

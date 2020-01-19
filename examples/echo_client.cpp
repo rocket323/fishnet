@@ -4,27 +4,23 @@
 
 TimerId timer_id = 0;
 
-void OnMsg(TcpConnectionPtr conn, Buffer *buffer)
-{
+void OnMsg(TcpConnectionPtr conn, Buffer *buffer) {
     std::string msg = buffer->RetrieveAllToString();
     printf("connection %s recv msg: %s\n", conn->PeerAddr().IpPort().c_str(), msg.c_str());
 }
 
-void OnConnected(TcpConnectionPtr conn)
-{
+void OnConnected(TcpConnectionPtr conn) {
     printf("connection %s connected\n", conn->PeerAddr().IpPort().c_str());
     conn->SetReadCallback(OnMsg);
     timer_id = EventLoop::Current()->RunPeriodic(1000, [conn] { conn->Write("Hello world"); });
 }
 
-void OnClose(TcpConnectionPtr conn)
-{
+void OnClose(TcpConnectionPtr conn) {
     printf("connection %s closed\n", conn->PeerAddr().IpPort().c_str());
     EventLoop::Current()->CancelTimer(timer_id);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int port = 12345;
     if (argc >= 2)
         port = atoi(argv[1]);

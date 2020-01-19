@@ -12,8 +12,7 @@ class EventLoop;
 class Acceptor;
 class TcpConnection;
 
-class TcpServer
-{
+class TcpServer {
 public:
     TcpServer(EventLoop *event_loop, const InetAddr &server_addr);
     ~TcpServer();

@@ -10,17 +10,16 @@ class EventLoop;
 class Eventor;
 class Socket;
 
-class TcpConnection : public std::enable_shared_from_this<TcpConnection>
-{
+class TcpConnection : public std::enable_shared_from_this<TcpConnection> {
 public:
-    enum ConnState
-    {
+    enum ConnState {
         ConnState_Connecting,
         ConnState_Connected,
         ConnState_Disconnected,
     };
 
-    TcpConnection(EventLoop *event_loop, int sockfd, const InetAddr &local_addr, const InetAddr &peer_addr);
+    TcpConnection(EventLoop *event_loop, int sockfd, const InetAddr &local_addr,
+                  const InetAddr &peer_addr);
     ~TcpConnection();
 
     void SetConnectionCallback(const ConnectionCallback &cb) { connection_callback_ = cb; }

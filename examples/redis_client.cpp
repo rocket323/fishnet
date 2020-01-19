@@ -3,10 +3,8 @@
 
 using namespace std::placeholders;
 
-void OnReply2(redisReply *reply, RedisClient *client, int idx)
-{
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
+void OnReply2(redisReply *reply, RedisClient *client, int idx) {
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
         printf("error: %s\n", reply ? reply->str : "nil reply");
         EventLoop::Current()->Stop();
         return;
@@ -19,10 +17,8 @@ void OnReply2(redisReply *reply, RedisClient *client, int idx)
         EventLoop::Current()->Stop();
 }
 
-void OnReply(redisReply *reply)
-{
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
+void OnReply(redisReply *reply) {
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
         printf("error: %s\n", reply ? reply->str : "nil reply");
         EventLoop::Current()->Stop();
         return;
@@ -38,8 +34,7 @@ void OnReply(redisReply *reply)
     EventLoop::Current()->Stop();
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     auto loop = EventLoop::Current();
     RedisClient client(loop, InetAddr(6379));
 

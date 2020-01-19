@@ -5,11 +5,9 @@
 #include <string>
 #include <vector>
 
-class HttpRequest
-{
+class HttpRequest {
 public:
-    enum ParseState
-    {
+    enum ParseState {
         PARSE_REQUEST_LINE,
         PARSE_HEADERS,
         PARSE_BODY,
@@ -37,7 +35,9 @@ public:
     void SetProto(const std::string &proto) { proto_ = proto; }
     void SetHeader(const std::string &key, const std::string &value) { headers_[key] = value; }
     void SetContentType(const std::string &value) { SetHeader("Content-Type", value); }
-    void SetContentLength(size_t len) { SetHeader("Content-Length", std::to_string((unsigned long long)len)); }
+    void SetContentLength(size_t len) {
+        SetHeader("Content-Length", std::to_string((unsigned long long)len));
+    }
     void SetKeepAlive(bool on);
 
     void Write(const std::string &str);

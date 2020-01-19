@@ -9,10 +9,10 @@ class EventLoop;
 class Eventor;
 class Socket;
 
-class Acceptor
-{
+class Acceptor {
 public:
-    Acceptor(EventLoop *event_loop, const InetAddr &listen_addr, const AcceptCallback &accept_callback);
+    Acceptor(EventLoop *event_loop, const InetAddr &listen_addr,
+             const AcceptCallback &accept_callback);
     ~Acceptor();
 
     bool Listen();

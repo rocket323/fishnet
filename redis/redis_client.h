@@ -9,12 +9,13 @@
 #include "redis_connection.h"
 #include "tcp/inet_addr.h"
 
-class RedisClient
-{
+class RedisClient {
 public:
-    RedisClient(EventLoop *event_loop, const std::string &domain, int port, const std::string &passwd = "");
+    RedisClient(EventLoop *event_loop, const std::string &domain, int port,
+                const std::string &passwd = "");
     RedisClient(EventLoop *event_loop, const InetAddr &addr, const std::string &passwd = "");
-    RedisClient(EventLoop *event_loop, const std::vector<InetAddr> addrs, const std::string &passwd = "");
+    RedisClient(EventLoop *event_loop, const std::vector<InetAddr> addrs,
+                const std::string &passwd = "");
     ~RedisClient();
 
     int Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...);
@@ -43,8 +44,7 @@ private:
     std::map<std::string, std::map<uint64_t, RedisConnectionPtr>> idle_conns_;
     std::map<uint64_t, TimerId> timer_ids_;
 
-    struct IpPort
-    {
+    struct IpPort {
         std::string ip;
         int port;
         IpPort(const std::string &ip_, int port_) : ip(ip_), port(port_) {}

@@ -5,20 +5,15 @@
 #include "socket.h"
 #include "tcp_connection.h"
 
-int Connector::Connect(const InetAddr &server_addr, int &sockfd)
-{
+int Connector::Connect(const InetAddr &server_addr, int &sockfd) {
     sockfd = sockets::CreateNonBlockingStreamSocket();
     if (sockfd < 0)
         return NET_ERR;
 
-    if (::connect(sockfd, server_addr.SockAddr(), sizeof(*server_addr.SockAddr())))
-    {
-        if (errno == EINPROGRESS)
-        {
+    if (::connect(sockfd, server_addr.SockAddr(), sizeof(*server_addr.SockAddr()))) {
+        if (errno == EINPROGRESS) {
             // it is ok.
-        }
-        else
-        {
+        } else {
             // error
             ::close(sockfd);
             return NET_ERR;
@@ -27,8 +22,8 @@ int Connector::Connect(const InetAddr &server_addr, int &sockfd)
     return NET_OK;
 }
 
-std::shared_ptr<TcpConnection> Connector::Connect(EventLoop *event_loop, const InetAddr &server_addr)
-{
+std::shared_ptr<TcpConnection> Connector::Connect(EventLoop *event_loop,
+                                                  const InetAddr &server_addr) {
     int sockfd;
     int ret = Connect(server_addr, sockfd);
     if (ret != NET_OK)

@@ -7,12 +7,10 @@
 class EventLoop;
 class Eventor;
 
-class Poller
-{
+class Poller {
 public:
     // File Event Flags
-    enum EventFlag
-    {
+    enum EventFlag {
         NONE = 0,
         READABLE = 1 << 0,
         WRITABLE = 1 << 1,
