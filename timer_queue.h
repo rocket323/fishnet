@@ -9,22 +9,19 @@
 typedef uint64_t TimerId;
 typedef std::function<void()> TimerTask;
 
-struct Timer
-{
+struct Timer {
     TimerId timer_id;
     TimerTask task;
     int64_t expiration_ms;
     int64_t interval_ms;
-    bool operator<(const Timer &rhs) const
-    {
+    bool operator<(const Timer &rhs) const {
         if (expiration_ms != rhs.expiration_ms)
             return expiration_ms < rhs.expiration_ms;
         return timer_id < rhs.timer_id;
     }
 };
 
-class TimerQueue
-{
+class TimerQueue {
 public:
     TimerId AddTimer(const TimerTask &task, int64_t expiration_ms, int64_t interval_ms);
     void RemoveTimer(TimerId timer_id);

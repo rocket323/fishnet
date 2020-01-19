@@ -9,8 +9,7 @@
 
 class EventLoop;
 
-class Eventor
-{
+class Eventor {
 public:
     Eventor(EventLoop *event_loop, int fd);
     ~Eventor();

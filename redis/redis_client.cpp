@@ -10,9 +10,12 @@
 
 using namespace std::placeholders;
 
-RedisClient::RedisClient(EventLoop *event_loop, const std::string &domain, int port, const std::string &passwd)
-    : event_loop_(event_loop), redis_addrs_(1, IpPort(domain, port)), redis_addr_idx_(0), passwd_(passwd)
-{
+RedisClient::RedisClient(EventLoop *event_loop, const std::string &domain, int port,
+                         const std::string &passwd)
+    : event_loop_(event_loop),
+      redis_addrs_(1, IpPort(domain, port)),
+      redis_addr_idx_(0),
+      passwd_(passwd) {
     assert(!redis_addrs_.empty());
 }
 
@@ -20,27 +23,24 @@ RedisClient::RedisClient(EventLoop *event_loop, const InetAddr &addr, const std:
     : event_loop_(event_loop),
       redis_addrs_(1, IpPort(addr.Ip(), addr.HostOrderPort())),
       redis_addr_idx_(0),
-      passwd_(passwd)
-{
+      passwd_(passwd) {
     assert(!redis_addrs_.empty());
 }
 
-RedisClient::RedisClient(EventLoop *event_loop, const std::vector<InetAddr> addrs, const std::string &passwd)
-    : event_loop_(event_loop), redis_addr_idx_(0), passwd_(passwd)
-{
+RedisClient::RedisClient(EventLoop *event_loop, const std::vector<InetAddr> addrs,
+                         const std::string &passwd)
+    : event_loop_(event_loop), redis_addr_idx_(0), passwd_(passwd) {
     for (auto &addr : addrs)
         redis_addrs_.push_back(IpPort(addr.Ip(), addr.HostOrderPort()));
 
     assert(!redis_addrs_.empty());
 }
 
-RedisClient::~RedisClient()
-{
+RedisClient::~RedisClient() {
     HandleClose();
 }
 
-int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...)
-{
+int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     int status = Do(cb, timeout_ms, fmt, ap);
@@ -48,62 +48,59 @@ int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char
     return status;
 }
 
-int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, va_list ap)
-{
+int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const char *fmt, va_list ap) {
     RedisConnectionPtr conn = GetConn();
     if (!conn)
         return NET_ERR;
 
     int status = conn->Do(std::bind(&RedisClient::OnRedisReply, this, cb, conn, _1), fmt, ap);
-    if (status != NET_OK)
-    {
+    if (status != NET_OK) {
         conn->Close();
         return status;
     }
 
     // Add timer
-    TimerId timer_id = event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
+    TimerId timer_id =
+        event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
     timer_ids_[conn->Id()] = timer_id;
 
     return NET_OK;
 }
 
 int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, int argc, const char **argv,
-                    const size_t *argvlen)
-{
+                    const size_t *argvlen) {
     RedisConnectionPtr conn = GetConn();
     if (!conn)
         return NET_ERR;
 
-    int status = conn->Do(std::bind(&RedisClient::OnRedisReply, this, cb, conn, _1), argc, argv, argvlen);
-    if (status != NET_OK)
-    {
+    int status =
+        conn->Do(std::bind(&RedisClient::OnRedisReply, this, cb, conn, _1), argc, argv, argvlen);
+    if (status != NET_OK) {
         conn->Close();
         return status;
     }
 
     // Add timer
-    TimerId timer_id = event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
+    TimerId timer_id =
+        event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
     timer_ids_[conn->Id()] = timer_id;
 
     return NET_OK;
 }
 
-int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommand cmd)
-{
+int RedisClient::Do(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommand cmd) {
     const std::vector<std::string> &args = cmd.args_;
     std::vector<const char *> argv;
     std::vector<size_t> argvlen;
-    for (auto iter = args.begin(); iter != args.end(); iter++)
-    {
+    for (auto iter = args.begin(); iter != args.end(); iter++) {
         argv.push_back(iter->c_str());
         argvlen.push_back(iter->length());
     }
     return Do(cb, timeout_ms, (int)argv.size(), argv.data(), argvlen.data());
 }
 
-int RedisClient::DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms, const RedisCommands cmds)
-{
+int RedisClient::DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms,
+                         const RedisCommands cmds) {
     auto conn = GetConn();
     if (!conn)
         return NET_ERR;
@@ -111,8 +108,7 @@ int RedisClient::DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms, const
     // MULTI
     int status = NET_OK;
     status = conn->Do(std::bind(&RedisClient::OnStatusReply, this, conn, "OK", _1), "MULTI");
-    if (status != NET_OK)
-    {
+    if (status != NET_OK) {
         conn->Close();
         return status;
     }
@@ -120,20 +116,17 @@ int RedisClient::DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms, const
     // CMDS
     std::vector<const char *> argv;
     std::vector<size_t> argvlen;
-    for (auto iter = cmds.cmds_.begin(); iter != cmds.cmds_.end(); iter++)
-    {
+    for (auto iter = cmds.cmds_.begin(); iter != cmds.cmds_.end(); iter++) {
         const std::vector<std::string> &args = iter->args_;
         argv.resize(args.size());
         argvlen.resize(args.size());
-        for (size_t i = 0; i < args.size(); i++)
-        {
+        for (size_t i = 0; i < args.size(); i++) {
             argv[i] = args[i].c_str();
             argvlen[i] = args[i].length();
         }
-        status = conn->Do(std::bind(&RedisClient::OnStatusReply, this, conn, "QUEUED", _1), (int)argv.size(),
-                          argv.data(), argvlen.data());
-        if (status != NET_OK)
-        {
+        status = conn->Do(std::bind(&RedisClient::OnStatusReply, this, conn, "QUEUED", _1),
+                          (int)argv.size(), argv.data(), argvlen.data());
+        if (status != NET_OK) {
             conn->Close();
             return status;
         }
@@ -141,29 +134,27 @@ int RedisClient::DoMulti(const RedisReplyCallback &cb, int64_t timeout_ms, const
 
     // EXEC
     status = conn->Do(std::bind(&RedisClient::OnRedisReply, this, cb, conn, _1), "EXEC");
-    if (status != NET_OK)
-    {
+    if (status != NET_OK) {
         conn->Close();
         return status;
     }
 
     // Add timer
-    TimerId timer_id = event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
+    TimerId timer_id =
+        event_loop_->RunAfter(timeout_ms, std::bind(&RedisClient::OnRedisReplyTimeout, this, conn));
     timer_ids_[conn->Id()] = timer_id;
 
     return NET_OK;
 }
 
-InetAddr RedisClient::GetNextAddr()
-{
+InetAddr RedisClient::GetNextAddr() {
     size_t idx = redis_addr_idx_;
     if (++redis_addr_idx_ >= redis_addrs_.size())
         redis_addr_idx_ = 0;
     auto &ip_port = redis_addrs_[idx];
 
     std::string ip = ip_port.ip;
-    if (!std::isdigit(ip[0]))
-    {
+    if (!std::isdigit(ip[0])) {
         struct hostent *h;
         h = gethostbyname(ip.c_str());
         if (h == nullptr)
@@ -180,14 +171,12 @@ InetAddr RedisClient::GetNextAddr()
     return InetAddr(ip, ip_port.port);
 }
 
-RedisConnectionPtr RedisClient::GetConn()
-{
+RedisConnectionPtr RedisClient::GetConn() {
     auto addr = GetNextAddr();
     RedisConnectionPtr conn;
     auto &idle_list = idle_conns_[addr.IpPort()];
 
-    while (!idle_list.empty())
-    {
+    while (!idle_list.empty()) {
         conn.swap(idle_list.begin()->second);
         idle_list.erase(idle_list.begin());
         if (!conn->IdleExpired(2 * 60 * 1000))
@@ -211,11 +200,10 @@ RedisConnectionPtr RedisClient::GetConn()
 
     conn->SetDisconnectCallback(std::bind(&RedisClient::OnDisconnect, this, _1));
 
-    if (passwd_.length() > 0)
-    {
-        int ret = conn->Do(std::bind(&RedisClient::OnStatusReply, this, conn, "OK", _1), "AUTH %s", passwd_.c_str());
-        if (ret != NET_OK)
-        {
+    if (passwd_.length() > 0) {
+        int ret = conn->Do(std::bind(&RedisClient::OnStatusReply, this, conn, "OK", _1), "AUTH %s",
+                           passwd_.c_str());
+        if (ret != NET_OK) {
             conn->Close();
             conn.reset();
         }
@@ -224,8 +212,7 @@ RedisConnectionPtr RedisClient::GetConn()
     return conn;
 }
 
-void RedisClient::PutConn(RedisConnectionPtr conn)
-{
+void RedisClient::PutConn(RedisConnectionPtr conn) {
     auto &idle_list = idle_conns_[conn->PeerAddr().IpPort()];
 
     // At most 16 idle connections per (ip, port)
@@ -235,12 +222,10 @@ void RedisClient::PutConn(RedisConnectionPtr conn)
         conn->Close();
 }
 
-void RedisClient::OnRedisReply(RedisReplyCallback cb, RedisConnectionPtr conn, redisReply *reply)
-{
+void RedisClient::OnRedisReply(RedisReplyCallback cb, RedisConnectionPtr conn, redisReply *reply) {
     // Remove timer
     auto iter = timer_ids_.find(conn->Id());
-    if (iter != timer_ids_.end())
-    {
+    if (iter != timer_ids_.end()) {
         event_loop_->CancelTimer(iter->second);
         timer_ids_.erase(iter);
     }
@@ -249,8 +234,7 @@ void RedisClient::OnRedisReply(RedisReplyCallback cb, RedisConnectionPtr conn, r
     if (conn->Closed())
         return;
 
-    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR)
-    {
+    if (reply == nullptr || reply->type == REDIS_REPLY_ERROR) {
         conn->Close();
         return;
     }
@@ -259,14 +243,12 @@ void RedisClient::OnRedisReply(RedisReplyCallback cb, RedisConnectionPtr conn, r
     PutConn(conn);
 }
 
-void RedisClient::OnRedisReplyTimeout(RedisConnectionPtr conn)
-{
+void RedisClient::OnRedisReplyTimeout(RedisConnectionPtr conn) {
     timer_ids_.erase(conn->Id());
     conn->Close();
 }
 
-void RedisClient::OnDisconnect(RedisConnectionPtr conn)
-{
+void RedisClient::OnDisconnect(RedisConnectionPtr conn) {
     auto iter = idle_conns_.find(conn->PeerAddr().IpPort());
     if (iter == idle_conns_.end())
         return;
@@ -277,35 +259,28 @@ void RedisClient::OnDisconnect(RedisConnectionPtr conn)
 }
 
 // Expect to receive a reply with specific status("OK" or "QUEUED")
-void RedisClient::OnStatusReply(RedisConnectionPtr conn, const char *status, redisReply *reply)
-{
-    if (reply == nullptr)
-    {
+void RedisClient::OnStatusReply(RedisConnectionPtr conn, const char *status, redisReply *reply) {
+    if (reply == nullptr) {
         conn->Close();
         return;
     }
 
-    if (reply->type == REDIS_REPLY_ERROR)
-    {
+    if (reply->type == REDIS_REPLY_ERROR) {
         conn->Close();
         return;
     }
 
-    if (reply->type != REDIS_REPLY_STATUS || strcmp(reply->str, status) != 0)
-    {
+    if (reply->type != REDIS_REPLY_STATUS || strcmp(reply->str, status) != 0) {
         conn->Close();
         return;
     }
 }
 
-void RedisClient::HandleClose()
-{
+void RedisClient::HandleClose() {
     // Close all connections
     auto idle_conns = std::move(idle_conns_);
-    for (auto iter = idle_conns.begin(); iter != idle_conns.end(); iter++)
-    {
-        for (auto conn_it = iter->second.begin(); conn_it != iter->second.end(); conn_it++)
-        {
+    for (auto iter = idle_conns.begin(); iter != idle_conns.end(); iter++) {
+        for (auto conn_it = iter->second.begin(); conn_it != iter->second.end(); conn_it++) {
             conn_it->second->Close();
         }
     }

@@ -1,0 +1,11 @@
+---
+Language:        Cpp
+BasedOnStyle:  Google
+PointerAlignment: Right
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+ColumnLimit:     100
+IndentWidth:     4
+TabWidth:        4

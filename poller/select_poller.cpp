@@ -5,8 +5,7 @@
 #include "event_loop.h"
 #include "eventor.h"
 
-struct PollerApiData
-{
+struct PollerApiData {
     int max_fd_ = -1;
 
     // Interest fd sets.
@@ -19,18 +18,15 @@ struct PollerApiData
     fd_set tmp_err_fds_;
 };
 
-Poller::Poller(EventLoop *event_loop) : event_loop_(event_loop)
-{
+Poller::Poller(EventLoop *event_loop) : event_loop_(event_loop) {
     api_data_ = new PollerApiData;
 }
 
-Poller::~Poller()
-{
+Poller::~Poller() {
     delete (PollerApiData *)api_data_;
 }
 
-bool Poller::UpdateEvents(Eventor *eventor)
-{
+bool Poller::UpdateEvents(Eventor *eventor) {
     PollerApiData *state = static_cast<PollerApiData *>(api_data_);
 
     int mask = eventor->InterestEvents();
@@ -53,8 +49,7 @@ bool Poller::UpdateEvents(Eventor *eventor)
     return true;
 }
 
-bool Poller::RemoveEvents(Eventor *eventor)
-{
+bool Poller::RemoveEvents(Eventor *eventor) {
     PollerApiData *state = static_cast<PollerApiData *>(api_data_);
 
     FD_CLR(eventor->Fd(), &state->read_fds_);
@@ -63,11 +58,9 @@ bool Poller::RemoveEvents(Eventor *eventor)
     eventors_.erase(eventor->Fd());
 
     // Update max_fd_.
-    if (eventor->Fd() == state->max_fd_)
-    {
+    if (eventor->Fd() == state->max_fd_) {
         state->max_fd_ = -1;
-        for (auto &kv : eventors_)
-        {
+        for (auto &kv : eventors_) {
             if (kv.second->Fd() > state->max_fd_)
                 state->max_fd_ = kv.second->Fd();
         }
@@ -76,8 +69,7 @@ bool Poller::RemoveEvents(Eventor *eventor)
     return true;
 }
 
-void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
-{
+void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors) {
     PollerApiData *state = static_cast<PollerApiData *>(api_data_);
 
     eventors.clear();
@@ -92,11 +84,10 @@ void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
     tv.tv_sec = timeout_ms / 1000;
     tv.tv_usec = (timeout_ms % 1000) * 1000;
 
-    int num = select(state->max_fd_ + 1, &state->tmp_read_fds_, &state->tmp_write_fds_, &state->tmp_err_fds_, &tv);
-    if (num > 0)
-    {
-        for (auto &kv : eventors_)
-        {
+    int num = select(state->max_fd_ + 1, &state->tmp_read_fds_, &state->tmp_write_fds_,
+                       &state->tmp_err_fds_, &tv);
+    if (num > 0) {
+        for (auto &kv : eventors_) {
             auto eventor = kv.second;
             if (eventor->InterestEvents() == Poller::NONE)
                 continue;

@@ -4,8 +4,7 @@
 #include <arpa/inet.h>
 #include <string>
 
-class InetAddr
-{
+class InetAddr {
 public:
     InetAddr();
     InetAddr(const struct sockaddr_in &addr);
@@ -23,7 +22,9 @@ public:
     uint32_t NetworkOrderIp() const;
     uint16_t NetworkOrderPort() const;
 
-    struct sockaddr *SockAddr() { return (struct sockaddr *)(&addr_); }
+    struct sockaddr *SockAddr() {
+        return (struct sockaddr *)(&addr_);
+    }
     const struct sockaddr *SockAddr() const { return (const struct sockaddr *)(&addr_); }
     const struct sockaddr_in &SockAddrIn() const { return addr_; }
 

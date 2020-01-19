@@ -12,11 +12,11 @@ class InetAddr;
 class EventLoop;
 class TcpConnection;
 
-class Connector
-{
+class Connector {
 public:
     static int Connect(const InetAddr &server_addr, int &sockfd);
-    static std::shared_ptr<TcpConnection> Connect(EventLoop *event_loop, const InetAddr &server_addr);
+    static std::shared_ptr<TcpConnection> Connect(EventLoop *event_loop,
+                                                  const InetAddr &server_addr);
 };
 
 #endif

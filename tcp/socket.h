@@ -3,8 +3,7 @@
 
 class InetAddr;
 
-namespace sockets
-{
+namespace sockets {
 int CreateStreamSocket();
 int Bind(int sockfd, const InetAddr &bind_addr);
 int CreateNonBlockingStreamSocket();
@@ -21,8 +20,7 @@ InetAddr GetLocalAddr(int sockfd);
 InetAddr GetPeerAddr(int sockfd);
 }  // namespace sockets
 
-class Socket
-{
+class Socket {
 public:
     Socket(int sockfd);
     ~Socket();

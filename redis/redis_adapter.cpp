@@ -3,43 +3,37 @@
 #include "async.h"
 #include "redis_connection.h"
 
-void RedisNetAddRead(void *privdata)
-{
+void RedisNetAddRead(void *privdata) {
     assert(privdata != nullptr);
     RedisConnection *conn = static_cast<RedisConnection *>(privdata);
     conn->EnableReading();
 }
 
-void RedisNetDelRead(void *privdata)
-{
+void RedisNetDelRead(void *privdata) {
     assert(privdata != nullptr);
     RedisConnection *conn = static_cast<RedisConnection *>(privdata);
     conn->DisableReading();
 }
 
-void RedisNetAddWrite(void *privdata)
-{
+void RedisNetAddWrite(void *privdata) {
     assert(privdata != nullptr);
     RedisConnection *conn = static_cast<RedisConnection *>(privdata);
     conn->EnableWriting();
 }
 
-void RedisNetDelWrite(void *privdata)
-{
+void RedisNetDelWrite(void *privdata) {
     assert(privdata != nullptr);
     RedisConnection *conn = static_cast<RedisConnection *>(privdata);
     conn->DisableWriting();
 }
 
-void RedisNetCleanUp(void *privdata)
-{
+void RedisNetCleanUp(void *privdata) {
     assert(privdata != nullptr);
     RedisConnection *conn = static_cast<RedisConnection *>(privdata);
     conn->Remove();
 }
 
-void RedisNetAttach(redisAsyncContext *ac, RedisConnection *conn)
-{
+void RedisNetAttach(redisAsyncContext *ac, RedisConnection *conn) {
     ac->ev.addRead = RedisNetAddRead;
     ac->ev.delRead = RedisNetDelRead;
     ac->ev.addWrite = RedisNetAddWrite;

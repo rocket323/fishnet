@@ -6,11 +6,9 @@
 #include <vector>
 #include "http_util.h"
 
-class HttpResponse
-{
+class HttpResponse {
 public:
-    enum ParseState
-    {
+    enum ParseState {
         PARSE_STATUS_LINE,
         PARSE_HEADERS,
         PARSE_BODY,
@@ -40,7 +38,9 @@ public:
     void SetStatusMessage(const std::string &status_message) { status_message_ = status_message; }
     void SetHeader(const std::string &key, const std::string &value) { headers_[key] = value; }
     void SetConentType(const std::string &value) { SetHeader("Content-Type", value); }
-    void SetConentLength(size_t len) { SetHeader("Content-Length", std::to_string((unsigned long long)len)); }
+    void SetConentLength(size_t len) {
+        SetHeader("Content-Length", std::to_string((unsigned long long)len));
+    }
     void SetKeepAlive(bool on);
 
     void Write(const std::string &str);

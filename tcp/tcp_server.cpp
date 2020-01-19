@@ -7,35 +7,30 @@
 using namespace std::placeholders;
 
 TcpServer::TcpServer(EventLoop *event_loop, const InetAddr &server_addr)
-    : event_loop_(event_loop), server_addr_(server_addr)
-{
+    : event_loop_(event_loop), server_addr_(server_addr) {
 }
 
-TcpServer::~TcpServer()
-{
+TcpServer::~TcpServer() {
 }
 
-bool TcpServer::Start()
-{
-    acceptor_.reset(new Acceptor(event_loop_, server_addr_, std::bind(&TcpServer::OnAccept, this, _1)));
+bool TcpServer::Start() {
+    acceptor_.reset(
+        new Acceptor(event_loop_, server_addr_, std::bind(&TcpServer::OnAccept, this, _1)));
 
     bool succ = acceptor_->Listen();
-    if (!succ)
-    {
+    if (!succ) {
         err_msg_ = acceptor_->ErrMsg();
         acceptor_.reset();
     }
     return succ;
 }
 
-void TcpServer::Stop()
-{
+void TcpServer::Stop() {
     acceptor_->Stop();
     event_loop_->Stop();
 }
 
-void TcpServer::OnAccept(int sockfd)
-{
+void TcpServer::OnAccept(int sockfd) {
     // New connection
     InetAddr local_addr(sockets::GetLocalAddr(sockfd));
     InetAddr peer_addr(sockets::GetPeerAddr(sockfd));
@@ -52,8 +47,7 @@ void TcpServer::OnAccept(int sockfd)
     conn->GetEventLoop()->Post(std::bind(&TcpConnection::OnConnectionEstablished, conn));
 }
 
-void TcpServer::RemoveConnection(TcpConnectionPtr conn)
-{
+void TcpServer::RemoveConnection(TcpConnectionPtr conn) {
     if (close_callback_)
         close_callback_(conn);
 

@@ -9,15 +9,13 @@
 
 using namespace std::placeholders;
 
-int64_t CurrentSystemTimeMillis()
-{
+int64_t CurrentSystemTimeMillis() {
     struct timeval tv;
     ::gettimeofday(&tv, NULL);
     return static_cast<int64_t>(tv.tv_sec) * 1000 + tv.tv_usec / 1000;
 }
 
-time_t CurrentSystemTime()
-{
+time_t CurrentSystemTime() {
     time_t now = ::time(NULL);
     return now;
 }
@@ -26,24 +24,20 @@ EventLoop::EventLoop()
     : m_thread_id(std::this_thread::get_id()),
       m_poller(new Poller(this)),
       m_timer_queue(new TimerQueue()),
-      m_running(false)
-{
+      m_running(false) {
 }
 
-EventLoop::~EventLoop()
-{
+EventLoop::~EventLoop() {
 }
 
 __thread EventLoop *tls_ptr = NULL;
-EventLoop *EventLoop::Current()
-{
+EventLoop *EventLoop::Current() {
     if (tls_ptr == NULL)
         tls_ptr = new EventLoop;
     return tls_ptr;
 }
 
-void EventLoop::Post(const Task &task)
-{
+void EventLoop::Post(const Task &task) {
     bool is_empty;
     {
         std::lock_guard<std::mutex> lock(m_tasks_mutex);
@@ -57,66 +51,55 @@ void EventLoop::Post(const Task &task)
     //     WakeUp();
 }
 
-void EventLoop::UpdateEvents(Eventor *eventor)
-{
+void EventLoop::UpdateEvents(Eventor *eventor) {
     std::lock_guard<std::mutex> lock(m_poller_mutex);
     m_poller->UpdateEvents(eventor);
 }
 
-void EventLoop::RemoveEvents(Eventor *eventor)
-{
+void EventLoop::RemoveEvents(Eventor *eventor) {
     std::lock_guard<std::mutex> lock(m_poller_mutex);
     m_poller->RemoveEvents(eventor);
 }
 
-TimerId EventLoop::RunAt(int64_t expiration, const Task &task)
-{
+TimerId EventLoop::RunAt(int64_t expiration, const Task &task) {
     // DCHECK(IsCurrent());
     return m_timer_queue->AddTimer(task, expiration, 0);
 }
 
-TimerId EventLoop::RunAfter(int64_t delay, const Task &task)
-{
+TimerId EventLoop::RunAfter(int64_t delay, const Task &task) {
     // DCHECK(IsCurrent());
     return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + delay, 0);
 }
 
-TimerId EventLoop::RunPeriodic(int64_t interval, const Task &task)
-{
+TimerId EventLoop::RunPeriodic(int64_t interval, const Task &task) {
     // DCHECK(IsCurrent());
     return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + interval, interval);
 }
 
-TimerId EventLoop::RunPeriodic(int64_t delay, int64_t interval, const Task &task)
-{
+TimerId EventLoop::RunPeriodic(int64_t delay, int64_t interval, const Task &task) {
     // DCHECK(IsCurrent());
     return m_timer_queue->AddTimer(task, CurrentSystemTimeMillis() + delay, interval);
 }
 
-void EventLoop::CancelTimer(TimerId id)
-{
+void EventLoop::CancelTimer(TimerId id) {
     // DCHECK(IsCurrent());
     return m_timer_queue->RemoveTimer(id);
 }
 
-int EventLoop::TimerCount() const
-{
+int EventLoop::TimerCount() const {
     return m_timer_queue->TimerCount();
 }
 
-void EventLoop::Loop()
-{
+void EventLoop::Loop() {
     AssertIsCurrent();
     m_running = true;
-    while (m_running)
-    {
+    while (m_running) {
         // wait for 5ms at most
         LoopOnce(5);
     }
 }
 
-int EventLoop::LoopOnce(int poll_timeout_ms)
-{
+int EventLoop::LoopOnce(int poll_timeout_ms) {
     // must run in loop-thread
     // DCHECK(IsCurrent());
 
@@ -139,7 +122,8 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
     num += m_timer_queue->Expire(now_ms, next_expiration);
 
     // poller
-    if (next_expiration > now_ms && (poll_timeout_ms == -1 || (next_expiration - now_ms) < poll_timeout_ms))
+    if (next_expiration > now_ms &&
+        (poll_timeout_ms == -1 || (next_expiration - now_ms) < poll_timeout_ms))
         poll_timeout_ms = next_expiration - now_ms;
 
     {
@@ -151,8 +135,7 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
 
     std::vector<Eventor *> active_eventors;
     m_poller->Poll(poll_timeout_ms, active_eventors);
-    for (auto iter = active_eventors.begin(); iter != active_eventors.end(); iter++)
-    {
+    for (auto iter = active_eventors.begin(); iter != active_eventors.end(); iter++) {
         (*iter)->HandleEvents();
         num++;
     }
@@ -160,8 +143,7 @@ int EventLoop::LoopOnce(int poll_timeout_ms)
     return num;
 }
 
-void EventLoop::Stop()
-{
+void EventLoop::Stop() {
     m_running = false;
     // if (!IsCurrent())
     //     WakeUp();
