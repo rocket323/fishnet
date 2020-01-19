@@ -92,7 +92,7 @@ void Poller::Poll(int timeout_ms, std::vector<Eventor *> &eventors)
     tv.tv_sec = timeout_ms / 1000;
     tv.tv_usec = (timeout_ms % 1000) * 1000;
 
-    int num = ::select(state->max_fd_ + 1, &state->tmp_read_fds_, &state->tmp_write_fds_, &state->tmp_err_fds_, &tv);
+    int num = select(state->max_fd_ + 1, &state->tmp_read_fds_, &state->tmp_write_fds_, &state->tmp_err_fds_, &tv);
     if (num > 0)
     {
         for (auto &kv : eventors_)
