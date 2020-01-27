@@ -12,9 +12,12 @@ void OnReply(redisReply *reply) {
     }
     if (reply->type == REDIS_REPLY_NIL)
         puts("<nil>");
-    else if (reply->type == REDIS_REPLY_ARRAY)
-        puts("<array>");
-    else if (reply->type == REDIS_REPLY_INTEGER)
+    else if (reply->type == REDIS_REPLY_ARRAY) {
+        for (int i = 0; i < reply->elements; i++) {
+            printf("%d) ", i);
+            OnReply(reply->element[i]);
+        }
+    } else if (reply->type == REDIS_REPLY_INTEGER)
         printf("%lld\n", reply->integer);
     else
         printf("%s\n", reply->str);
