@@ -15,7 +15,7 @@ SET(GTEST_ALL_LIB ${GTEST_LIB_DIR}/libgtest_main.a ${GTEST_LIB_DIR}/libgtest.a)
 # hiredis
 SET(HIREDIS_DIR ${DEPS_DIR}/hiredis/)
 
-file(GLOB SOURCE *.cpp tcp/*.cpp redis/*.cpp)
+file(GLOB SOURCE *.cpp tcp/*.cpp redis2/*.cpp)
 
 SET(NET_COMMON_INCLUDE
     ${CMAKE_ROOT_DIR}
