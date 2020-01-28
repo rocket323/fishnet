@@ -19,7 +19,8 @@ RedisConnection::~RedisConnection() {
     assert(context == nullptr);
 }
 
-RedisConnectionPtr RedisConnection::Connect(EventLoop *loop, const InetAddr &addr) {
+RedisConnectionPtr RedisConnection::Connect(EventLoop *loop, const InetAddr &addr,
+                                            const std::string &passwd) {
     RedisConnectionPtr conn;
     redisAsyncContext *context = redisAsyncConnect(addr.Ip().c_str(), addr.HostOrderPort());
     if (context == nullptr)
@@ -34,6 +35,17 @@ RedisConnectionPtr RedisConnection::Connect(EventLoop *loop, const InetAddr &add
     RedisNetAttach(context, conn.get());
     redisAsyncSetConnectCallback(context, OnConnect);
     redisAsyncSetDisconnectCallback(context, OnDisconnect);
+
+    // Auth.
+    if (passwd.length() > 0) {
+        int ret = conn->Do(std::bind(&RedisConnection::MustBeOK, conn, _1), 2000, "AUTH %s",
+                           passwd.c_str());
+        if (ret != NET_OK) {
+            conn->Close();
+            conn.reset();
+            return conn;
+        }
+    }
 
     return conn;
 }
@@ -154,6 +166,14 @@ void RedisConnection::OnReply(redisAsyncContext *context, void *reply, void *pri
 
     req.callback(static_cast<redisReply *>(reply));
     conn->cache_requests_.erase(iter);
+}
+
+void RedisConnection::MustBeOK(RedisConnectionPtr conn, redisReply *reply) {
+    // Close conn if not OK.
+    if (reply->type == REDIS_REPLY_ERROR)
+        conn->Close();
+    else if (reply->type != REDIS_REPLY_STATUS || strcmp(reply->str, "OK") != 0)
+        conn->Close();
 }
 
 void RedisConnection::OnTimeout(RedisConnectionPtr conn, uint64_t seq) {

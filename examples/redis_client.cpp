@@ -1,6 +1,7 @@
 // #include "redis/redis_client.h"
 #include <cstring>
 #include "redis2/conn.h"
+#include "redis2/pool.h"
 
 using namespace std::placeholders;
 
@@ -33,7 +34,8 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    auto conn = RedisConnection::Connect(loop, addr);
+    RedisPool pool(loop, 16);
+    auto conn = pool.GetConn();
     if (!conn) {
         puts("connect failed!");
         return -1;

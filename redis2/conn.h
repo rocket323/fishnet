@@ -40,8 +40,10 @@ public:
            const size_t *argvlen = nullptr);
 
     // Create a new connection to a specific addr
-    static RedisConnectionPtr Connect(EventLoop *event_loop, const InetAddr &addr);
+    static RedisConnectionPtr Connect(EventLoop *event_loop, const InetAddr &addr,
+                                      const std::string &passwd);
     void Close(bool from_hiredis = false);
+    bool IsClosed() const { return closed_; }
 
 public:
     // Trivial functions.
@@ -62,6 +64,7 @@ private:
     static void OnDisconnect(const redisAsyncContext *context, int status);
     static void OnReply(redisAsyncContext *context, void *reply, void *privdata);
     static void OnTimeout(RedisConnectionPtr conn, uint64_t seq);
+    static void MustBeOK(RedisConnectionPtr conn, redisReply *reply);
 
     // Callback from eventor
     void HandleEvents(int events);
