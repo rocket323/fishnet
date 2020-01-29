@@ -75,7 +75,6 @@ int RedisConnection::Dov(RedisReplyCallback cb, int64_t timeout_ms, const char *
 int RedisConnection::Do(RedisReplyCallback cb, int64_t timeout_ms, const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    // fixme.
     int status = Dov(cb, timeout_ms, fmt, ap);
     va_end(ap);
     return status;
