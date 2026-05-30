@@ -1,7 +1,8 @@
-cmake_minimum_required (VERSION 2.8) 
+cmake_minimum_required (VERSION 3.5) 
 project(fishnet CXX)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC -std=c++11 -Wno-deprecated -Wno-unused-variable -Wno-sign-compare -Wno-strict-aliasing -fno-strict-aliasing -DNDEBUG")
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -fPIC -Wno-deprecated -Wno-unused-variable -Wno-sign-compare -Wno-strict-aliasing -fno-strict-aliasing -DNDEBUG")
 
 SET(CMAKE_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET(DEPS_DIR ${CMAKE_ROOT_DIR}/deps)
