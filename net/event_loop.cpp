@@ -1,8 +1,10 @@
 #include "event_loop.h"
+
 #include <assert.h>
 // #include <sys/eventfd.h>
 #include <sys/time.h>
 #include <unistd.h>
+
 #include "eventor.h"
 #include "poller.h"
 #include "timer_queue.h"
@@ -38,10 +40,10 @@ EventLoop *EventLoop::Current() {
 }
 
 void EventLoop::Post(const Task &task) {
-    bool is_empty;
+    // bool is_empty;
     {
         std::lock_guard<std::mutex> lock(m_tasks_mutex);
-        is_empty = m_tasks.empty();
+        // is_empty = m_tasks.empty();
         m_tasks.push_back(task);
     }
 

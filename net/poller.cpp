@@ -3,7 +3,7 @@
 #include "eventor.h"
 
 #ifdef __linux__
-#include "poller/epoll_poller.cpp"
+#include "epoll_poller.cpp"
 #else
-#include "poller/select_poller.cpp"
+#include "select_poller.cpp"
 #endif

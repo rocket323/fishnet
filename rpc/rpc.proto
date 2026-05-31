@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package fishnet;
+
+option cc_generic_services = true;
+
+message RpcMessage {
+  enum MessageType {
+    REQUEST = 0;
+    RESPONSE = 1;
+    ERROR = 2;
+  }
+  MessageType type = 1;
+  uint64 id = 2;
+  string service = 3;
+  string method = 4;
+  bytes payload = 5;
+  string error = 6;
+}
