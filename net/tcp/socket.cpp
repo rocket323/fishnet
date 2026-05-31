@@ -27,6 +27,7 @@ bool Socket::BindAndListen(const InetAddr &addr, int backlog) {
 
 int Socket::Accept() {
     struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
     socklen_t sockaddr_len = sizeof(addr);
     int fd = ::accept(sock_fd_, (struct sockaddr *)(&addr), &sockaddr_len);
     return fd;
@@ -128,15 +129,21 @@ int GetSocketError(int sockfd, int &saved_error) {
 
 InetAddr GetLocalAddr(int sockfd) {
     struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
     socklen_t addr_len = sizeof(addr);
-    ::getsockname(sockfd, (struct sockaddr *)&addr, &addr_len);
+    if (::getsockname(sockfd, (struct sockaddr *)&addr, &addr_len) < 0) {
+        // error
+    }
     return InetAddr(addr);
 }
 
 InetAddr GetPeerAddr(int sockfd) {
     struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
     socklen_t addr_len = sizeof(addr);
-    ::getpeername(sockfd, (struct sockaddr *)&addr, &addr_len);
+    if (::getpeername(sockfd, (struct sockaddr *)&addr, &addr_len) < 0) {
+        // error
+    }
     return InetAddr(addr);
 }
 }  // namespace sockets

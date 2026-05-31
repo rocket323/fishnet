@@ -30,7 +30,7 @@ std::shared_ptr<TcpConnection> Connector::Connect(EventLoop *event_loop,
         return std::shared_ptr<TcpConnection>();
 
     auto conn = std::make_shared<TcpConnection>(event_loop, sockfd, sockets::GetLocalAddr(sockfd),
-                                                sockets::GetPeerAddr(sockfd));
+                                                server_addr);
 
     conn->state_ = TcpConnection::ConnState_Connecting;
     conn->EnableWriting();
